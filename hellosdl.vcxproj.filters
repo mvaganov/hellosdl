@@ -18,7 +18,7 @@
     <ClCompile Include="src\01_hello_SDL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\System.cpp">
+    <ClCompile Include="src\sdlengine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\stringstuff.cpp">
@@ -26,7 +26,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\System.h">
+    <ClInclude Include="src\sdlengine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\stringstuff.h">

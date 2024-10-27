@@ -2,56 +2,50 @@
 and may not be redistributed without written permission.*/
 
 //Using SDL and standard IO
-#include "System.h"
+#include "sdlengine.h"
 #include <stdio.h>
-
+#include <chrono>
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
+typedef std::chrono::high_resolution_clock Clock;
+typedef Clock::time_point TimePoint;
+typedef std::chrono::duration<double> HiResDuration;
+
+
 int main( int argc, char* args[] )
-{
-	printf("Hello world!");
-	//The _window we'll be rendering to
-	SDL_Window* _window = NULL;
-	
-	//The surface contained by the _window
-	SDL_Surface* screenSurface = NULL;
-
-	//Initialize SDL
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-	{
-		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+{	System sdl(SCREEN_WIDTH, SCREEN_HEIGHT);
+	System::ErrorCode err = sdl.Init("sdl", System::Renderer::SDL_Renderer);
+	sdl.FailFast();
+	//SDL_Surface* img; sdl.LoadSdlSurface("img/helloworld.bmp", img);
+	SDL_Texture* tex; sdl.LoadSdlTexture("img/helloworld.png", tex);
+	sdl.FailFast();
+	SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
+	SDL_Renderer* g = sdl.GetRenderer();
+	while (sdl.IsRunning()) {
+		TimePoint t0 = Clock::now();
+		sdl.ClearGraphics();
+		SDL_Rect stretchRect;
+		stretchRect.x = 0;
+		stretchRect.y = 0;
+		stretchRect.w = SCREEN_WIDTH/8;
+		stretchRect.h = SCREEN_HEIGHT;
+		//SDL_BlitScaled(img, NULL, sdl.GetScreenSurface(), &stretchRect);
+		SDL_RenderCopy(g, tex, NULL, NULL);
+		SDL_SetRenderDrawColor(g, 0xFF, 0x00, 0x00, 0xFF);
+		SDL_RenderFillRect(g, &fillRect);
+		SDL_SetRenderDrawColor(g, 0x00, 0xFF, 0x00, 0xFF);
+		SDL_RenderDrawRect(g, &fillRect);
+		sdl.Render();
+		sdl.ProcessInput();
+		TimePoint t1 = Clock::now();
+		HiResDuration time_span = std::chrono::duration_cast<HiResDuration>(t1 - t0);
+		double secondsDuration = time_span.count();
+		int maxFps = (int)(1 / secondsDuration);
+		printf("%d fps   \r", maxFps);
+		SDL_Delay(100);
 	}
-	else
-	{
-		//Create _window
-		_window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-		if( _window == NULL )
-		{
-			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
-		}
-		else
-		{
-			//Get _window surface
-			screenSurface = SDL_GetWindowSurface( _window );
-
-			//Fill the surface white
-			SDL_FillRect( screenSurface, NULL, SDL_MapRGB( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
-			
-			//Update the surface
-			SDL_UpdateWindowSurface( _window );
-            
-            //Hack to get _window to stay up
-            SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
-		}
-	}
-
-	//Destroy _window
-	SDL_DestroyWindow( _window );
-
-	//Quit SDL subsystems
-	SDL_Quit();
-
+	sdl.Release();
 	return 0;
 }

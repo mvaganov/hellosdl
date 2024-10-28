@@ -24,12 +24,21 @@
     <ClCompile Include="src\stringstuff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\coord.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\sdlengine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\stringstuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\coord.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

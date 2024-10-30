@@ -185,6 +185,19 @@ void System::ProcessInput() {
 				ExecuteDelegates(found->second, e);
 			}
 			break;
+		case SDL_MOUSEMOTION:
+			MousePosition.x = e.motion.x;
+			MousePosition.y = e.motion.y;
+			printf("mousemotion x%d, y%d, type%d, dx%d, dy%d\n",
+				e.motion.x, e.motion.y, e.motion.type, e.motion.xrel, e.motion.yrel);
+			break;
+		case SDL_MOUSEBUTTONUP:
+		case SDL_MOUSEBUTTONDOWN:
+			MousePosition.x = e.button.x;
+			MousePosition.y = e.button.y;
+			printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
+				e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
+			break;
 		}
 	}
 }

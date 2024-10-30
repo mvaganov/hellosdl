@@ -1,3 +1,4 @@
+#pragma once
 #include "stringstuff.h"
 #include <functional>
 #include <cmath>
@@ -7,14 +8,14 @@ public:
 	typedef std::function<void(const Coord&)> Action;
 	typedef std::function<bool(const Coord&)> Func;
 
-	short row, col;
+	int x, y;
 
-	Coord() : col(0), row(0) {}
-	Coord(int col, int row) : col((short)col), row((short)row) {}
-	Coord(const Coord& o) : col(o.col), row(o.row) {}
+	Coord() : x(0), y(0) {}
+	Coord(int x, int y) : x(x), y(y) {}
+	Coord(const Coord& o) : x(o.x), y(o.y) {}
 
-	int GetX() const { return col; }
-	int GetY() const { return row; }
+	int GetX() const { return x; }
+	int GetY() const { return y; }
 
 	static Coord Zero;// = new Coord(0, 0);
 	static Coord One;// = new Coord(1, 1);
@@ -24,31 +25,31 @@ public:
 	static Coord Down;// = new Coord(0, 1);
 	static Coord Right;// = new Coord(1, 0);
 
-	std::string ToString() const { return string_format("%f,%f", col, row); }
-	int GetHashCode() const { return row * 0x00010000 + col; }
-	bool Equals(const Coord& c) const { return row == c.row && col == c.col; }
+	std::string ToString() const { return string_format("%f,%f", x, y); }
+	int GetHashCode() const { return y * 0x00010000 + x; }
+	bool Equals(const Coord& c) const { return y == c.y && x == c.x; }
 
 	bool operator ==(const Coord& o) const { return Equals(o); }
 	bool operator !=(const Coord& o) const { return !Equals(o); }
-	Coord operator +(const Coord& o) const { return Coord(col + o.col, row + o.row); }
-	Coord operator -(const Coord& o) const { return Coord(col - o.col, row - o.row); }
-	Coord& operator -=(const Coord& o) { col -= o.col; row -= o.row; return *this; }
-	Coord& operator +=(const Coord& o) { col += o.col; row += o.row; return *this; }
-	Coord operator -() const { return Coord(-col, -row); }
+	Coord operator +(const Coord& o) const { return Coord(x + o.x, y + o.y); }
+	Coord operator -(const Coord& o) const { return Coord(x - o.x, y - o.y); }
+	Coord& operator -=(const Coord& o) { x -= o.x; y -= o.y; return *this; }
+	Coord& operator +=(const Coord& o) { x += o.x; y += o.y; return *this; }
+	Coord operator -() const { return Coord(-x, -y); }
 	Coord& operator=(const Coord& o) {
 		if (this == &o) { return *this; }
-		col = o.col; row = o.row;
+		x = o.x; y = o.y;
 		return *this;
 	}
 
-	Coord& Scale(const Coord& scale) { col *= scale.col; row *= scale.row; return *this; }
-	Coord& InverseScale(const Coord& scale) { col /= scale.col; row /= scale.row; return *this; }
+	Coord& Scale(const Coord& scale) { x *= scale.x; y *= scale.y; return *this; }
+	Coord& InverseScale(const Coord& scale) { x /= scale.x; y /= scale.y; return *this; }
 
 	/// <param name="min">inclusive starting point</param>
 	/// <param name="max">exclusive limit</param>
 	/// <returns>if this is within the given range</returns>
 	bool IsWithin(const Coord& min, const Coord& max) const {
-		return row >= min.row && row < max.row && col >= min.col && col < max.col;
+		return y >= min.y && y < max.y && x >= min.x && x < max.x;
 	}
 
 	/// <param name="max">exclusive limit</param>
@@ -56,18 +57,18 @@ public:
 	bool IsWithin(const Coord& max) const { return IsWithin(Zero, max); }
 
 	void Clamp(const Coord& min, const Coord& max) {
-		col = (col < min.col) ? min.col : (col > max.col) ? max.col : col;
-		row = (row < min.row) ? min.row : (row > max.row) ? max.row : row;
+		x = (x < min.x) ? min.x : (x > max.x) ? max.x : x;
+		y = (y < min.y) ? min.y : (y > max.y) ? max.y : y;
 	}
 
 	//public static Coord SizeOf(Array map) {
-	//	return new Coord { row = (short)map.GetLength(0), col = (short)map.GetLength(1) };
+	//	return new Coord { y = (short)map.GetLength(0), x = (short)map.GetLength(1) };
 	//}
 
 	static void ForEach(const Coord& min, const Coord& max, Action& action) {
 		Coord cursor = min;
-		for(cursor.row = min.row; cursor.row < max.row; ++cursor.row) {
-			for(cursor.col = min.col; cursor.col < max.col; ++cursor.col) {
+		for(cursor.y = min.y; cursor.y < max.y; ++cursor.y) {
+			for(cursor.x = min.x; cursor.x < max.x; ++cursor.x) {
 				action(cursor);
 			}
 		}
@@ -82,8 +83,8 @@ public:
 	/// <returns>true if action returned true even once</returns>
 	static bool ForEach(Coord min, Coord max, Func action) {
 		Coord cursor = min;
-		for(cursor.row = min.row; cursor.row < max.row; ++cursor.row) {
-			for(cursor.col = min.col; cursor.col < max.col; ++cursor.col) {
+		for(cursor.y = min.y; cursor.y < max.y; ++cursor.y) {
+			for(cursor.x = min.x; cursor.x < max.x; ++cursor.x) {
 				if(action(cursor)) { return true; }
 			}
 		}
@@ -93,27 +94,27 @@ public:
 	bool ForEach(Func action) { return ForEach(Zero, *this, action); }
 
 	static void ForEachInclusive(Coord start, Coord end, Action action) {
-		bool colIncrease = start.col < end.col, rowIncrease = start.row < end.row;
+		bool xIncrease = start.x < end.x, yIncrease = start.y < end.y;
 		Coord cursor = start;
 		do {
-			cursor.col = start.col;
+			cursor.x = start.x;
 			do {
 				action(cursor);
-				if (cursor.col == end.col || (colIncrease ? cursor.col > end.col : cursor.col < end.col)) { break; }
-				if (colIncrease) { ++cursor.col; } else { --cursor.col; }
+				if (cursor.x == end.x || (xIncrease ? cursor.x > end.x : cursor.x < end.x)) { break; }
+				if (xIncrease) { ++cursor.x; } else { --cursor.x; }
 			} while (true);
-			if (cursor.row == end.row || (rowIncrease ? cursor.row > end.row : cursor.row < end.row)) { break; }
-			if (rowIncrease) { ++cursor.row; } else { --cursor.row; }
+			if (cursor.y == end.y || (yIncrease ? cursor.y > end.y : cursor.y < end.y)) { break; }
+			if (yIncrease) { ++cursor.y; } else { --cursor.y; }
 		} while (true);
 	}
 
 	static int ManhattanDistance(Coord a, Coord b) {
 		Coord delta = b - a;
-		return abs(delta.col) + abs(delta.row);
+		return abs(delta.x) + abs(delta.y);
 	}
 
 	//void SetCursorPosition() {
-	//	return Console.SetCursorPosition(col, row);
+	//	return Console.SetCursorPosition(x, y);
 	//}
 	//static Coord GetCursorPosition() {
 	//	return Coord(Console.CursorLeft, Console.CursorTop);
@@ -122,9 +123,9 @@ public:
 
 //public static class CoordExtension {
 //	public static TYPE At<TYPE>(this TYPE[,] matrix, Coord coord) {
-//		return matrix[coord.row, coord.col];
+//		return matrix[coord.y, coord.x];
 //	}
 //	public static void SetAt<TYPE>(this TYPE[,] matrix, Coord coord, TYPE value) {
-//		matrix[coord.row, coord.col] = value;
+//		matrix[coord.y, coord.x] = value;
 //	}
 //}

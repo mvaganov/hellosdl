@@ -5,6 +5,8 @@
 #include <map>
 #include <functional>
 #include <vector>
+#include "coord.h"
+#include "rect.h"
 
 class System
 {
@@ -41,6 +43,7 @@ private:
 	std::vector<SDL_Surface*> _managedSurfaces;
 	std::vector<SDL_Texture*> _managedTextures;
 public:
+	Coord MousePosition;
 	System(int width, int height);
 	~System();
 	void FailFast();
@@ -63,6 +66,7 @@ public:
 	/// <param name="pressed"></param>
 	/// <returns></returns>
 	System::ErrorCode SetPressed(int sdlk, bool pressed);
+	std::function<void(int, int)> OnMouseMove;
 private:
 	System::ErrorCode InitSDL_Surface();
 	System::ErrorCode InitSDL_Renderer();

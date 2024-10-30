@@ -1,58 +1,79 @@
+#pragma once
 #include "coord.h"
+#include "SDL.h"
 
 class Rect {
-	Coord min, max;
+	Coord min, size;
 
-	Rect(const Coord& min, const Coord& max) : min(min), max(max) { }
-	Rect(const Rect& o) : Rect(o.min, o.max) {}
-	Rect(int x, int y, int width, int height) : min(x, y), max(x + width, y + height) { }
+	Rect(const Coord& min, const Coord& size) : min(min), size(size) { }
+	Rect(const Rect& o) : Rect(o.min, o.size) {}
+	Rect(int x, int y, int width, int height) : min(x, y), size(width, height) { }
+	Rect(const SDL_Rect& rect) { *this = *((Rect*)&rect); }
 
-	int GetX() const { return min.col; }
-	void SetX(int value) { min.col = (short)value; }
-	int GetY() const { return min.row; }
-	void SetY(int value) { min.row = (short)value; }
-	int GetWidth() const { return max.col - min.col; }
-	void SetWidth(int value) { max.col = (short)(min.col + value); }
-	int GetHeight() const { return max.row - min.row; }
-	void setHeight(int value) { max.row = (short)(min.row + value); }
+	static Rect FromMinMax(const Coord& min, const Coord& max) {
+		return Rect(min, max - min);
+	}
 
-	int GetMinY() const { return min.row; }
-	void SetMinY(int value) { min.row = (short)value; }
-	int GetMinX() const { return min.col; }
-	void SetMinX(int value) { min.col = (short)value; }
-	int GetMaxY() const { return max.row; }
-	void SetMaxY(int value) { max.row = (short)value; }
-	int GetMaxX() const { return max.col; }
-	void SetMaxX(int value) { max.col = (short)value; }
+	int GetX() const { return min.x; }
+	void SetX(int value) { min.x = value; }
+	int GetY() const { return min.y; }
+	void SetY(int value) { min.y = value; }
+	int GetWidth() const { return size.x; }
+	void SetWidth(int value) { size.x = value; }
+	int GetHeight() const { return size.y; }
+	void SetHeight(int value) { size.y = value; }
 
+	int GetMinY() const { return min.y; }
+	void SetMinY(int value) { min.y = value; }
+	int GetMinX() const { return min.x; }
+	void SetMinX(int value) { min.x = value; }
+	int GetMaxX() const { return min.x + size.x; }
+	void SetMaxX(int value) { size.x = value - min.x; }
+	int GetMaxY() const { return min.y + size.y; }
+	void SetMaxY(int value) { size.y = value - min.y; }
+
+	Coord GetMin() const { return min; }
+	Coord GetMax() const { return min+size; }
+	void SetMin(const Coord& value) { Coord max = GetMax(); min = value; SetMax(max); }
+	void SetMax(const Coord& value) { size = value - min; }
 	Coord GetPosition() const { return min; }
-
-	Coord Size() const { return max - min; }
+	Coord GetSize() const { return size; }
 
 	static bool GetRectIntersect(const Coord& aMin, const Coord& aMax, const Coord& bMin, const Coord& bMax,
 		Coord& oMin, Coord& oMax) {
-		oMin = Coord(std::max(aMin.col, bMin.col), std::max(aMin.row, bMin.row));
-		oMax = Coord(std::min(aMax.col, bMax.col), std::min(aMax.row, bMax.row));
-		return oMin.col < oMax.col && oMin.row < oMax.row;
+		oMin = Coord(std::max(aMin.x, bMin.x), std::max(aMin.y, bMin.y));
+		oMax = Coord(std::min(aMax.x, bMax.x), std::min(aMax.y, bMax.y));
+		return oMin.x < oMax.x && oMin.y < oMax.y;
 	}
 
 	Rect Intersect(const Rect& r) const {
 		Coord iMin, iMax;
-		GetRectIntersect(min, max, r.min, r.max, iMin, iMax);
-		return Rect(iMin, iMax);
+		GetRectIntersect(GetMin(), GetMax(), r.GetMin(), r.GetMax(), iMin, iMax);
+		return Rect::FromMinMax(iMin, iMax);
 	}
 
 	static bool TryGetIntersect(const Rect& a, const Rect& b, Rect& o) {
-		return GetRectIntersect(a.min, a.max, b.min, b.max, o.min, o.max);
+		Coord max;
+		bool result = GetRectIntersect(a.GetMin(), a.GetMax(), b.GetMin(), b.GetMax(), o.min, max);
+		o.SetMax(max);
+		return result;
 	}
 
-	bool TryGetIntersect(const Rect& r, Rect& intersection) const { TryGetIntersect(*this, r, intersection); }
+	bool TryGetIntersect(const Rect& r, Rect& intersection) const {
+		TryGetIntersect(*this, r, intersection);
+	}
 
-	void ForEach(Coord::Action locationAction) const { Coord::ForEach(min, max, locationAction); }
+	void ForEach(Coord::Action locationAction) const {
+		Coord::ForEach(GetMin(), GetMax(), locationAction);
+	}
 
-	bool ForEach(Coord::Func locationCondition) const { return Coord::ForEach(min, max, locationCondition); }
+	bool ForEach(Coord::Func locationCondition) const {
+		return Coord::ForEach(GetMin(), GetMax(), locationCondition);
+	}
 
-	bool IsIntersect(Rect other) const { return IsRectIntersect(min, max, other.min, other.max); }
+	bool IsIntersect(Rect other) const {
+		return IsRectIntersect(GetMin(), GetMax(), other.GetMin(), other.GetMax());
+	}
 
 	static Rect Sum(Rect a, Rect b) {
 		b.Expand(a);
@@ -60,7 +81,7 @@ class Rect {
 	}
 
 	static bool IsRectIntersect(const Coord& aMin, const Coord& aMax, const Coord& bMin, const Coord& bMax) {
-		return aMin.col < bMax.col && bMin.col < aMax.col && aMin.row < bMax.row && bMin.row < aMax.row;
+		return aMin.x < bMax.x && bMin.x < aMax.x && aMin.y < bMax.y && bMin.y < aMax.y;
 	}
 
 	static bool IsSizeRectIntersect(const Coord& aMin, const Coord& aSize, const Coord& bMin, const Coord& bSize) {
@@ -80,23 +101,49 @@ class Rect {
 	/// <param name="hMax">haystack max corner</param>
 	/// <returns></returns>
 	static bool IsRectContained(const Coord& nMin, const Coord& nMax, const Coord& hMin, const Coord& hMax) {
-		return nMin.col >= hMin.col && hMax.col >= nMax.col && nMin.row >= hMin.row && hMax.row >= nMax.row;
+		return nMin.x >= hMin.x && hMax.x >= nMax.x && nMin.y >= hMin.y && hMax.y >= nMax.y;
 	}
 
 	static bool IsSizeRectContained(const Coord& nMin, const Coord& nSize, const Coord& hMin, const Coord& hSize) {
 		return IsRectContained(nMin, nMin + nSize, hMin, hMin + hSize);
 	}
 
-	static bool ExpandRectangle(const Coord& pMin, const Coord& pMax, Coord& min, Coord& max) {
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="pMin">a rectangle to add to an existing rectangle</param>
+	/// <param name="pMax"></param>
+	/// <param name="out_min">the existing rectangle</param>
+	/// <param name="out_max"></param>
+	/// <returns></returns>
+	static bool ExpandRectangle(const Coord& pMin, const Coord& pMax, Coord& out_min, Coord& out_max) {
 		bool change = false;
-		if (pMin.col < min.col) { min.col = pMin.col; change = true; }
-		if (pMin.row < min.row) { min.row = pMin.row; change = true; }
-		if (pMax.col > max.col) { max.col = pMax.col; change = true; }
-		if (pMax.row > max.row) { max.row = pMax.row; change = true; }
+		if (pMin.x < out_min.x) { out_min.x = pMin.x; change = true; }
+		if (pMin.y < out_min.y) { out_min.y = pMin.y; change = true; }
+		if (pMax.x > out_max.x) { out_max.x = pMax.x; change = true; }
+		if (pMax.y > out_max.y) { out_max.y = pMax.y; change = true; }
 		return change;
 	}
 
-	bool Expand(const Rect& p) { return ExpandRectangle(p.min, p.max, min, max); }
+	bool Expand(const Rect& p) {
+		Coord max;
+		bool result = ExpandRectangle(p.GetMin(), p.GetMax(), min, max);
+		SetMax(max);
+		return result;
+	}
 
-	bool Expand(const Coord& p) { return ExpandRectangle(p, p, min, max); }
+	bool Expand(const Coord& p) {
+		Coord max;
+		bool result = ExpandRectangle(p, p, min, max);
+		SetMax(max);
+		return result;
+	}
+
+	void RenderFillRect(SDL_Renderer* g) const {
+		SDL_RenderFillRect(g, (SDL_Rect*)this);
+	}
+
+	void RenderFillRect(SDL_Renderer* g) const {
+		SDL_RenderDrawRect(g, (SDL_Rect*)this);
+	}
 };

@@ -2,42 +2,56 @@
 #include "coord.h"
 #include "SDL.h"
 
-class Rect {
-	Coord min, size;
-
-	Rect(const Coord& min, const Coord& size) : min(min), size(size) { }
-	Rect(const Rect& o) : Rect(o.min, o.size) {}
-	Rect(int x, int y, int width, int height) : min(x, y), size(width, height) { }
+class Rect : public SDL_Rect {
+public:
+	Rect(const Coord& min, const Coord& size) : Rect(min.x, min.y, size.x, size.y) { }
+	Rect(const Rect& o) : Rect(o.x, o.y, o.w, o.h) {}
+	Rect(int x, int y, int width, int height) {
+		this->x = x; this->y = y; this->w = width; this->h = height;
+	}
 	Rect(const SDL_Rect& rect) { *this = *((Rect*)&rect); }
 
 	static Rect FromMinMax(const Coord& min, const Coord& max) {
 		return Rect(min, max - min);
 	}
 
-	int GetX() const { return min.x; }
-	void SetX(int value) { min.x = value; }
-	int GetY() const { return min.y; }
-	void SetY(int value) { min.y = value; }
-	int GetWidth() const { return size.x; }
-	void SetWidth(int value) { size.x = value; }
-	int GetHeight() const { return size.y; }
-	void SetHeight(int value) { size.y = value; }
+	int GetX() const { return x; }
+	void SetX(int value) { x = value; }
+	int GetY() const { return y; }
+	void SetY(int value) { y = value; }
+	int GetWidth() const { return w; }
+	void SetWidth(int value) { w = value; }
+	int GetHeight() const { return h; }
+	void SetHeight(int value) { h = value; }
 
-	int GetMinY() const { return min.y; }
-	void SetMinY(int value) { min.y = value; }
-	int GetMinX() const { return min.x; }
-	void SetMinX(int value) { min.x = value; }
-	int GetMaxX() const { return min.x + size.x; }
-	void SetMaxX(int value) { size.x = value - min.x; }
-	int GetMaxY() const { return min.y + size.y; }
-	void SetMaxY(int value) { size.y = value - min.y; }
+	int GetMinY() const { return y; }
+	void SetMinY(int value) { y = value; }
+	int GetMinX() const { return x; }
+	void SetMinX(int value) { x = value; }
+	int GetMaxX() const { return x + w; }
+	void SetMaxX(int value) { w = value - x; }
+	int GetMaxY() const { return y + h; }
+	void SetMaxY(int value) { h = value - y; }
 
-	Coord GetMin() const { return min; }
-	Coord GetMax() const { return min+size; }
-	void SetMin(const Coord& value) { Coord max = GetMax(); min = value; SetMax(max); }
-	void SetMax(const Coord& value) { size = value - min; }
-	Coord GetPosition() const { return min; }
-	Coord GetSize() const { return size; }
+	Coord GetMin() const { return Coord(x,y); }
+	Coord GetMax() const { return Coord(x+w, y+h); }
+	void SetMin(const Coord& value) { Coord max = GetMax(); Min() = value; SetMax(max); }
+	void SetMax(const Coord& value) { x = value.x - x; y = value.y - y; }
+	void SetMinMax(Coord min, Coord max) {
+		x = min.x;
+		y = min.y;
+		w = max.x - min.x;
+		h = max.y - min.y;
+	}
+	Coord GetPosition() const { return Coord(x,y); }
+	Coord GetSize() const { return Coord(w,h); }
+
+	Coord& Min() { return *((Coord*)&x); }
+	Coord& Size() { return *((Coord*)&w); }
+
+	bool IsContains(const Coord& coord) {
+		return coord.x >= x && coord.y >= y && coord.x < x + w && coord.y < y + h;
+	}
 
 	static bool GetRectIntersect(const Coord& aMin, const Coord& aMax, const Coord& bMin, const Coord& bMax,
 		Coord& oMin, Coord& oMax) {
@@ -53,9 +67,9 @@ class Rect {
 	}
 
 	static bool TryGetIntersect(const Rect& a, const Rect& b, Rect& o) {
-		Coord max;
-		bool result = GetRectIntersect(a.GetMin(), a.GetMax(), b.GetMin(), b.GetMax(), o.min, max);
-		o.SetMax(max);
+		Coord max, min;
+		bool result = GetRectIntersect(a.GetMin(), a.GetMax(), b.GetMin(), b.GetMax(), min, max);
+		o.SetMinMax(min, max);
 		return result;
 	}
 
@@ -126,16 +140,16 @@ class Rect {
 	}
 
 	bool Expand(const Rect& p) {
-		Coord max;
+		Coord max, min;
 		bool result = ExpandRectangle(p.GetMin(), p.GetMax(), min, max);
-		SetMax(max);
+		SetMinMax(min, max);
 		return result;
 	}
 
 	bool Expand(const Coord& p) {
-		Coord max;
+		Coord min, max;
 		bool result = ExpandRectangle(p, p, min, max);
-		SetMax(max);
+		SetMinMax(min, max);
 		return result;
 	}
 
@@ -143,7 +157,7 @@ class Rect {
 		SDL_RenderFillRect(g, (SDL_Rect*)this);
 	}
 
-	void RenderFillRect(SDL_Renderer* g) const {
+	void RenderDrawRect(SDL_Renderer* g) const {
 		SDL_RenderDrawRect(g, (SDL_Rect*)this);
 	}
 };

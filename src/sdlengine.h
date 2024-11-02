@@ -7,6 +7,7 @@
 #include <vector>
 #include "coord.h"
 #include "rect.h"
+#include "sdlhelper.h"
 
 class System
 {
@@ -36,14 +37,18 @@ private:
 	Renderer _rendererKind;
 	std::map<int, SdlEventDelegateList> _keyBindDown;
 	std::map<int, SdlEventDelegateList> _keyBindUp;
+	std::map<int, SdlEventDelegateList> _mouseBindDown;
+	std::map<int, SdlEventDelegateList> _mouseBindUp;
 	int _isPressedKeyMask[8];
 	int _isPressedKeyMaskScancode[16];
+	int _isMousePressed[1];
 	bool _running;
 	bool _initialized;
 	std::vector<SDL_Surface*> _managedSurfaces;
 	std::vector<SDL_Texture*> _managedTextures;
 public:
 	Coord MousePosition;
+	int MouseClickState;
 	System(int width, int height);
 	~System();
 	void FailFast();

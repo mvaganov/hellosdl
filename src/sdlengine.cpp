@@ -84,6 +84,7 @@ System::ErrorCode System::Init(std::string windowName, Renderer renderer)
 		_errorMessage = string_format("SDL could not initialize! SDL_Error: %s", SDL_GetError());
 		return System::ErrorCode::InitializationFailure;
 	}
+
 	//Set texture filtering to linear
 	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 	{
@@ -192,9 +193,24 @@ void System::ProcessInput() {
 				e.motion.x, e.motion.y, e.motion.type, e.motion.xrel, e.motion.yrel);
 			break;
 		case SDL_MOUSEBUTTONUP:
+			MousePosition.x = e.button.x;
+			MousePosition.y = e.button.y;
+			SetPressed(SDL_MOUSEMOTION | e.button.button, false);
+			found = _mouseBindUp.find(e.button.button);
+			if (found != _mouseBindUp.end()) {
+				ExecuteDelegates(found->second, e);
+			}
+			printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
+				e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
+			break;
 		case SDL_MOUSEBUTTONDOWN:
 			MousePosition.x = e.button.x;
 			MousePosition.y = e.button.y;
+			SetPressed(SDL_MOUSEMOTION | e.button.button, true);
+			found = _mouseBindDown.find(e.button.button);
+			if (found != _mouseBindDown.end()) {
+				ExecuteDelegates(found->second, e);
+			}
 			printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
 				e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
 			break;
@@ -220,6 +236,7 @@ System::ErrorCode System::InitSDL_Renderer() {
 		_errorMessage = string_format("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
 		return System::ErrorCode::WindowCreationFailure;
 	}
+	SDL_SetRenderDrawBlendMode(_gRenderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(_gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	return System::ErrorCode::Success;
 }
@@ -229,6 +246,9 @@ System::ErrorCode System::SetPressed(int sdlk, bool pressed) {
 	int* field = NULL;
 	if (sdlk >= 0 && sdlk < 256) {
 		field = this->_isPressedKeyMask;
+	} else if ((sdlk & SDL_MOUSEMOTION) != 0) {
+		sdlk -= SDL_MOUSEMOTION;
+		field = this->_isMousePressed;
 	} else if ((sdlk & SDLK_SCANCODE_MASK) != 0) {
 		sdlk -= SDLK_SCANCODE_MASK;
 		field = this->_isPressedKeyMaskScancode;
@@ -258,6 +278,9 @@ System::ErrorCode System::IsPressed(int sdlk, bool& out_pressed) {
 	int* field = NULL;
 	if (sdlk >= 0 && sdlk < 256) {
 		field = this->_isPressedKeyMask;
+	} else if ((sdlk & SDL_MOUSEMOTION) != 0) {
+		sdlk -= SDL_MOUSEMOTION;
+		field = this->_isMousePressed;
 	} else if ((sdlk & SDLK_SCANCODE_MASK) != 0) {
 		sdlk -= SDLK_SCANCODE_MASK;
 		field = this->_isPressedKeyMaskScancode;

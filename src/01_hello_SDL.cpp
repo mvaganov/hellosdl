@@ -21,22 +21,27 @@ int main( int argc, char* args[] )
 	//SDL_Surface* img; sdl.LoadSdlSurface("img/helloworld.bmp", img);
 	SDL_Texture* tex; sdl.LoadSdlTexture("img/helloworld.png", tex);
 	sdl.FailFast();
-	SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
+	//SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 	SDL_Renderer* g = sdl.GetRenderer();
+	Rect fillRect(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 	while (sdl.IsRunning()) {
 		TimePoint t0 = Clock::now();
 		sdl.ClearGraphics();
-		SDL_Rect stretchRect;
-		stretchRect.x = 0;
-		stretchRect.y = 0;
-		stretchRect.w = SCREEN_WIDTH/8;
-		stretchRect.h = SCREEN_HEIGHT;
+		//SDL_Rect stretchRect;
+		//stretchRect.x = 0;
+		//stretchRect.y = 0;
+		//stretchRect.w = SCREEN_WIDTH/8;
+		//stretchRect.h = SCREEN_HEIGHT;
 		//SDL_BlitScaled(img, NULL, sdl.GetScreenSurface(), &stretchRect);
 		SDL_RenderCopy(g, tex, NULL, NULL);
-		SDL_SetRenderDrawColor(g, 0xFF, 0x00, 0x00, 0xFF);
+		long color = fillRect.IsContains(sdl.MousePosition) ? 0x880000FF : 0xFF0000FF;
+		SDL_SetRenderDrawColor(g, color);
 		SDL_RenderFillRect(g, &fillRect);
-		SDL_SetRenderDrawColor(g, 0x00, 0xFF, 0x00, 0xFF);
+		SDL_SetRenderDrawColor(g, 0xFF00FF00);
 		SDL_RenderDrawRect(g, &fillRect);
+		SDL_SetRenderDrawColor(g, 0x8800FF00);
+		SDL_FillCircle(g, 200, 50, 50);
+		SDL_DrawCircle(g, 200, 50, 52);
 		sdl.Render();
 		sdl.ProcessInput();
 		TimePoint t1 = Clock::now();
@@ -44,7 +49,7 @@ int main( int argc, char* args[] )
 		double secondsDuration = time_span.count();
 		int maxFps = (int)(1 / secondsDuration);
 		printf("%d fps   \r", maxFps);
-		SDL_Delay(100);
+		SDL_Delay(10);
 	}
 	sdl.Release();
 	return 0;

@@ -134,12 +134,15 @@
   <ItemGroup>
     <ClCompile Include="src\01_hello_SDL.cpp" />
     <ClCompile Include="src\coord.cpp" />
+    <ClCompile Include="src\sdlhelper.cpp" />
     <ClCompile Include="src\stringstuff.cpp" />
     <ClCompile Include="src\sdlengine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\button.h" />
     <ClInclude Include="src\coord.h" />
     <ClInclude Include="src\rect.h" />
+    <ClInclude Include="src\sdlhelper.h" />
     <ClInclude Include="src\stringstuff.h" />
     <ClInclude Include="src\sdlengine.h" />
   </ItemGroup>

@@ -25,7 +25,8 @@ public:
 	enum class Renderer { None = 0, SDL_Surface = 1, SDL_Renderer = 2 };
 
 	typedef std::function<void(SDL_Event)> SdlEventDelegate;
-	typedef std::vector<SdlEventDelegate> SdlEventDelegateList;
+	typedef std::map<size_t, SdlEventDelegate> SdlEventDelegateList;
+	typedef std::map<int, SdlEventDelegateList> SdlEventDelegateListMap;
 private:
 
 	static System* _instance;
@@ -35,10 +36,10 @@ private:
 	SDL_Renderer* _gRenderer = NULL;
 	int _width, _height;
 	Renderer _rendererKind;
-	std::map<int, SdlEventDelegateList> _keyBindDown;
-	std::map<int, SdlEventDelegateList> _keyBindUp;
-	std::map<int, SdlEventDelegateList> _mouseBindDown;
-	std::map<int, SdlEventDelegateList> _mouseBindUp;
+	SdlEventDelegateListMap _keyBindDown;
+	SdlEventDelegateListMap _keyBindUp;
+	SdlEventDelegateListMap _mouseBindDown;
+	SdlEventDelegateListMap _mouseBindUp;
 	int _isPressedKeyMask[8];
 	int _isPressedKeyMaskScancode[16];
 	int _isMousePressed[1];
@@ -72,6 +73,10 @@ public:
 	/// <returns></returns>
 	System::ErrorCode SetPressed(int sdlk, bool pressed);
 	std::function<void(int, int)> OnMouseMove;
+	void RegisterMouseDown(int button, size_t owner, SdlEventDelegate eventDeletage);
+	void RegisterMouseUp(int button, size_t owner, SdlEventDelegate eventDeletage);
+	void UnregisterMouseDown(int button, size_t owner);
+	void UnregisterMouseUp(int button, size_t owner);
 private:
 	System::ErrorCode InitSDL_Surface();
 	System::ErrorCode InitSDL_Renderer();

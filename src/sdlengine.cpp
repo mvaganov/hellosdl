@@ -18,7 +18,7 @@ void System::FailFast() {
 	}
 }
 
-System::System(int width, int height) : _window(NULL), _screenSurface(NULL), _width(width), _height(height),
+System::System(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
 _rendererKind(Renderer::None), _running(false), _initialized(false), _isPressedKeyMask(), _isPressedKeyMaskScancode(),
 _managedSurfaces() {
 	_errorMessage = "";
@@ -158,9 +158,13 @@ void System::Render() {
 }
 
 void ExecuteDelegates(System::SdlEventDelegateList& delegates, SDL_Event e) {
-	for (int i = 0; i < delegates.size(); ++i) {
-		delegates[i](e);
+	for (auto it = delegates.begin(); it != delegates.end(); it++) {
+		//printf("%d  ", it->first);
+		it->second(e);
 	}
+	//for (int i = 0; i < delegates.size(); ++i) {
+	//	delegates[i](e);
+	//}
 }
 
 void System::ProcessInput() {
@@ -189,30 +193,32 @@ void System::ProcessInput() {
 		case SDL_MOUSEMOTION:
 			MousePosition.x = e.motion.x;
 			MousePosition.y = e.motion.y;
-			printf("mousemotion x%d, y%d, type%d, dx%d, dy%d\n",
-				e.motion.x, e.motion.y, e.motion.type, e.motion.xrel, e.motion.yrel);
+			//printf("mousemotion x%d, y%d, type%d, dx%d, dy%d\n",
+			//	e.motion.x, e.motion.y, e.motion.type, e.motion.xrel, e.motion.yrel);
 			break;
 		case SDL_MOUSEBUTTONUP:
 			MousePosition.x = e.button.x;
 			MousePosition.y = e.button.y;
 			SetPressed(SDL_MOUSEMOTION | e.button.button, false);
+			//printf("####################### UP BTN%d   %d\n", e.button.button, e.button.state);
 			found = _mouseBindUp.find(e.button.button);
 			if (found != _mouseBindUp.end()) {
 				ExecuteDelegates(found->second, e);
 			}
-			printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
-				e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
+			//printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
+			//	e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			MousePosition.x = e.button.x;
 			MousePosition.y = e.button.y;
 			SetPressed(SDL_MOUSEMOTION | e.button.button, true);
+			//printf("####################### DN BTN%d   %d\n", e.button.button, e.button.state);
 			found = _mouseBindDown.find(e.button.button);
 			if (found != _mouseBindDown.end()) {
 				ExecuteDelegates(found->second, e);
 			}
-			printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
-				e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
+			//printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
+			//	e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
 			break;
 		}
 	}
@@ -249,6 +255,7 @@ System::ErrorCode System::SetPressed(int sdlk, bool pressed) {
 	} else if ((sdlk & SDL_MOUSEMOTION) != 0) {
 		sdlk -= SDL_MOUSEMOTION;
 		field = this->_isMousePressed;
+		//printf("~~%d\n", sdlk);
 	} else if ((sdlk & SDLK_SCANCODE_MASK) != 0) {
 		sdlk -= SDLK_SCANCODE_MASK;
 		field = this->_isPressedKeyMaskScancode;
@@ -364,6 +371,47 @@ System::ErrorCode System::LoadSdlTexture(std::string path, SDL_Texture*& out_tex
 	SDL_FreeSurface(loadedSurface);
 	_managedTextures.push_back(out_texture);
 	return ErrorCode::Success;
+}
+
+void AddDelegateToList(System::SdlEventDelegateListMap& map, int button, size_t owner, System::SdlEventDelegate eventDelegate) {
+	System::SdlEventDelegateList* list = NULL;
+	auto found = map.find(button);
+	if (found != map.end()) {
+		list = &found->second;
+	} else {
+		map[button] = System::SdlEventDelegateList();
+		auto found = map.find(button);
+		list = &found->second;
+	}
+	(*list)[owner] = eventDelegate;
+}
+
+void RemoveDelegateFromList(System::SdlEventDelegateListMap& map, int button, size_t owner) {
+	auto found = map.find(button);
+	if (found == map.end()) {
+		return;
+	}
+	found->second.erase(owner);
+}
+
+void System::RegisterMouseDown(int button, size_t owner, System::SdlEventDelegate eventDelegate) {
+	button &= ~SDL_MOUSEMOTION;
+	//printf("DN MOUSE registered %d 0x%016x\n", button, owner);
+	AddDelegateToList(_mouseBindDown, button, owner, eventDelegate);
+}
+
+void System::RegisterMouseUp(int button, size_t owner, System::SdlEventDelegate eventDelegate) {
+	button &= ~SDL_MOUSEMOTION;
+	//printf("UP MOUSE registered %d 0x%016x\n", button, owner);
+	AddDelegateToList(_mouseBindUp, button, owner, eventDelegate);
+}
+
+void System::UnregisterMouseDown(int button, size_t owner) {
+	RemoveDelegateFromList(_mouseBindDown, button, owner);
+}
+
+void System::UnregisterMouseUp(int button, size_t owner) {
+	RemoveDelegateFromList(_mouseBindUp, button, owner);
 }
 
 #undef nameof

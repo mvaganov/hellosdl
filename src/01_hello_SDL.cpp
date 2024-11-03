@@ -5,6 +5,7 @@ and may not be redistributed without written permission.*/
 #include "sdlengine.h"
 #include <stdio.h>
 #include <chrono>
+#include "button.h"
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -24,6 +25,13 @@ int main( int argc, char* args[] )
 	//SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 	SDL_Renderer* g = sdl.GetRenderer();
 	Rect fillRect(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	Button button({ 10, 20, 30, 40 }, &sdl);
+	button.onPress = []() {
+		printf("pressed!\n");
+	};
+	button.onRelease = []() {
+		printf("released!\n");
+	};
 	while (sdl.IsRunning()) {
 		TimePoint t0 = Clock::now();
 		sdl.ClearGraphics();
@@ -42,8 +50,10 @@ int main( int argc, char* args[] )
 		SDL_SetRenderDrawColor(g, 0x8800FF00);
 		SDL_FillCircle(g, 200, 50, 50);
 		SDL_DrawCircle(g, 200, 50, 52);
+		button.Draw(g);
 		sdl.Render();
 		sdl.ProcessInput();
+		button.Update(&sdl);
 		TimePoint t1 = Clock::now();
 		HiResDuration time_span = std::chrono::duration_cast<HiResDuration>(t1 - t0);
 		double secondsDuration = time_span.count();

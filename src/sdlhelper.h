@@ -2,6 +2,12 @@
 #include <SDL.h>
 #include <stdio.h>
 
+typedef enum {
+	SDL_MOUSE_MAINCLICK = SDL_MOUSEMOTION +1,
+	SDL_MOUSE_MIDCLICK = SDL_MOUSEMOTION + 2,
+	SDL_MOUSE_SECONDCLICK = SDL_MOUSEMOTION + 3
+} SDL_EventType_extension;
+
 inline void SDL_SetRenderDrawColor(SDL_Renderer* renderer, long rgba) {
 	Uint8* c = (Uint8*)&rgba;
 	SDL_SetRenderDrawColor(renderer, c[0], c[1], c[2], c[3]);

@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\vclib\SDL2-2.30.8\include;D:\vclib\SDL2_image-2.8.2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\vclib\SDL2-2.30.8\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64\optional;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\vclib\SDL2-2.30.8\include;D:\vclib\SDL2_image-2.8.2\include;D:\vclib\SDL2_ttf-2.22.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\vclib\SDL2-2.30.8\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64\optional;D:\vclib\SDL2_ttf-2.22.0\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -134,6 +134,7 @@
   <ItemGroup>
     <ClCompile Include="src\01_hello_SDL.cpp" />
     <ClCompile Include="src\coord.cpp" />
+    <ClCompile Include="src\ltexture.cpp" />
     <ClCompile Include="src\sdlhelper.cpp" />
     <ClCompile Include="src\stringstuff.cpp" />
     <ClCompile Include="src\sdlengine.cpp" />
@@ -141,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="src\button.h" />
     <ClInclude Include="src\coord.h" />
+    <ClInclude Include="src\ltexture.h" />
     <ClInclude Include="src\rect.h" />
     <ClInclude Include="src\sdlhelper.h" />
     <ClInclude Include="src\stringstuff.h" />

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <string>
 #include <map>
 #include <functional>
@@ -28,9 +30,9 @@ public:
 	typedef std::map<size_t, SdlEventDelegate> SdlEventDelegateList;
 	typedef std::map<int, SdlEventDelegateList> SdlEventDelegateListMap;
 private:
-
+	// TODO rename _currentFount
+	TTF_Font* gFont;
 	static System* _instance;
-	std::string _errorMessage;
 	SDL_Window* _window = NULL;
 	SDL_Surface* _screenSurface = NULL;
 	SDL_Renderer* _gRenderer = NULL;
@@ -46,8 +48,10 @@ private:
 	bool _running;
 	bool _initialized;
 	std::vector<SDL_Surface*> _managedSurfaces;
-	std::vector<SDL_Texture*> _managedTextures;
+	std::vector<size_t> _managedTextures;
 public:
+	// TODO rename ErrorMessage
+	std::string _errorMessage;
 	Coord MousePosition;
 	int MouseClickState;
 	System(int width, int height);
@@ -58,13 +62,19 @@ public:
 	bool IsRunning();
 	SDL_Surface* GetScreenSurface();
 	SDL_Renderer* GetRenderer();
+	TTF_Font* GetFont();
 	void ClearGraphics();
 	void Render();
 	void ProcessInput();
 	System::ErrorCode IsPressed(int sdlk, bool& out_pressed);
 	System::ErrorCode LoadSdlSurfaceBasic(std::string path, SDL_Surface*& out_surface);
+	System::ErrorCode LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface);
 	System::ErrorCode LoadSdlSurface(std::string path, SDL_Surface*& out_surface);
 	System::ErrorCode LoadSdlTexture(std::string path, SDL_Texture*& out_texture);
+	System::ErrorCode LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture);
+	System::ErrorCode LoadTextTexture(std::string text, SDL_Texture*& out_texture);
+	void ReleaseSdlTexture(SDL_Texture* texture);
+	Coord GetTextureSize(SDL_Texture* texture);
 	/// <summary>
 	/// this is set by <see cref="System::ProcessInput"/>
 	/// </summary>

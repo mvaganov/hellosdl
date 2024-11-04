@@ -20,7 +20,8 @@ int main( int argc, char* args[] )
 	System::ErrorCode err = sdl.Init("sdl", System::Renderer::SDL_Renderer);
 	sdl.FailFast();
 	//SDL_Surface* img; sdl.LoadSdlSurface("img/helloworld.bmp", img);
-	SDL_Texture* tex; sdl.LoadSdlTexture("img/helloworld.png", tex);
+	SDL_Texture* tex;
+	sdl.LoadSdlTexture("img/helloworld.png", tex);
 	sdl.FailFast();
 	//SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 	SDL_Renderer* g = sdl.GetRenderer();

@@ -2,17 +2,16 @@
 #include "stringstuff.h"
 #include <functional>
 #include <cmath>
+#include <SDL.h>
 
-class Coord {
+class Coord : public SDL_Point {
 public: 
 	typedef std::function<void(const Coord&)> Action;
 	typedef std::function<bool(const Coord&)> Func;
 
-	int x, y;
-
-	Coord() : x(0), y(0) {}
-	Coord(int x, int y) : x(x), y(y) {}
-	Coord(const Coord& o) : x(o.x), y(o.y) {}
+	Coord() : SDL_Point({0,0}) {}
+	Coord(int x, int y) : SDL_Point({ x, y }) {}
+	Coord(const Coord& o) : SDL_Point({ o.x, o.y }) {}
 
 	int GetX() const { return x; }
 	int GetY() const { return y; }
@@ -111,6 +110,10 @@ public:
 	static int ManhattanDistance(Coord a, Coord b) {
 		Coord delta = b - a;
 		return abs(delta.x) + abs(delta.y);
+	}
+
+	void Set(int x, int y) {
+		this->x = x; this->y = y;
 	}
 
 	//void SetCursorPosition() {

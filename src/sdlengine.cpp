@@ -19,7 +19,8 @@ void System::FailFast() {
 }
 
 System::System(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
-_rendererKind(Renderer::None), _running(false), _initialized(false), _isPressedKeyMask(), _isPressedKeyMaskScancode(),
+_rendererKind(Renderer::None), _running(false), _initialized(false),
+_isPressedKeyMask(), _isMousePressed(), _isPressedKeyMaskScancode(),
 _managedSurfaces() {
 	_errorMessage = "";
 	if (_instance) {
@@ -27,6 +28,7 @@ _managedSurfaces() {
 	}
 	CLEAR_ARRAY(_isPressedKeyMask);
 	CLEAR_ARRAY(_isPressedKeyMaskScancode);
+	CLEAR_ARRAY(_isMousePressed);
 }
 
 System::~System() {
@@ -44,7 +46,7 @@ System::ErrorCode System::Release()
 		SDL_FreeSurface(loadedSurface);
 	}
 	for (int i = 0; i < _managedTextures.size(); ++i) {
-		SDL_Texture* loadedTexture = _managedTextures[i];
+		SDL_Texture* loadedTexture = (SDL_Texture*)_managedTextures[i];
 		if (loadedTexture == NULL) {
 			continue;
 		}
@@ -115,9 +117,12 @@ System::ErrorCode System::Init(std::string windowName, Renderer renderer)
 	}
 	// TODO create a separate image module, and be able to query if these image types can be loaded: IMG_INIT_JPG, IMG_INIT_PNG, IMG_INIT_TIF, IMG_INIT_WEBP, IMG_INIT_JXL, IMG_INIT_AVIF
 	int imgFlags = IMG_INIT_PNG;
-	if (!(IMG_Init(imgFlags) & imgFlags))
-	{
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
 		_errorMessage = string_format("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+		return ErrorCode::CapabilityLoadFailed;
+	}
+	if (TTF_Init() == -1) {
+		_errorMessage = string_format("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
 		return ErrorCode::CapabilityLoadFailed;
 	}
 	if (errorCode != ErrorCode::Success) {
@@ -134,6 +139,8 @@ bool System::IsRunning() {
 SDL_Surface* System::GetScreenSurface() { return this->_screenSurface; }
 
 SDL_Renderer* System::GetRenderer() { return this->_gRenderer; }
+
+TTF_Font* System::GetFont() { return this->gFont; }
 
 void System::ClearGraphics() {
 	switch (_rendererKind) {
@@ -325,17 +332,27 @@ System::ErrorCode System::LoadSdlSurfaceBasic(std::string path, SDL_Surface*& ou
 	std::string lowercasePath = str_tolower(path);
 	if (ends_with(lowercasePath, "bmp")) {
 		out_surface = SDL_LoadBMP(path.c_str());
-	}
-	else if (ends_with(lowercasePath, "png")) {
+	} else if (ends_with(lowercasePath, "png")) {
 		out_surface = IMG_Load(path.c_str());
-	}
-	else {
+	} else {
 		_errorMessage = string_format("Unable to load image format %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 		return ErrorCode::UnsupportedFormat;
 	}
 	if (out_surface == NULL)
 	{
 		_errorMessage = string_format("Failed to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		return ErrorCode::Failure;
+	}
+	return ErrorCode::Success;
+}
+
+System::ErrorCode System::LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface) {
+	SDL_Color textColor;
+	SDL_GetRenderDrawColor(_gRenderer, &textColor.r, &textColor.g, &textColor.b, &textColor.a);
+	out_surface = TTF_RenderText_Solid(gFont, text.c_str(), textColor);
+	if (out_surface == NULL)
+	{
+		_errorMessage = string_format("Failed to create TTF %s! SDL Error: %s\n", text.c_str(), SDL_GetError());
 		return ErrorCode::Failure;
 	}
 	return ErrorCode::Success;
@@ -361,15 +378,56 @@ System::ErrorCode System::LoadSdlTexture(std::string path, SDL_Texture*& out_tex
 	SDL_Surface* loadedSurface = NULL;
 	ErrorCode err = LoadSdlSurfaceBasic(path, loadedSurface);
 	if (err != ErrorCode::Success) { return err; }
+	err = LoadSdlTexture(loadedSurface, out_texture);
+	if (err != ErrorCode::Success) {
+		_errorMessage = string_format("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		return err;
+	}
+	////printf("have img %x\n", loadedSurface);
+	//out_texture = SDL_CreateTextureFromSurface(_gRenderer, loadedSurface);
+	//if (out_texture == NULL) {
+	//	_errorMessage = string_format("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+	//	return ErrorCode::Failure;
+	//}
+	//_managedTextures.push_back(out_texture);
+	SDL_FreeSurface(loadedSurface);
+	return ErrorCode::Success;
+}
+
+System::ErrorCode System::LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture) {
+	out_texture = SDL_CreateTextureFromSurface(_gRenderer, loadedSurface);
+	if (out_texture == NULL) {
+		_errorMessage = string_format("Unable to create texture from SDL_Surface! SDL Error: %s\n", SDL_GetError());
+		return ErrorCode::Failure;
+	}
+	_managedTextures.push_back((size_t)out_texture);
+	return ErrorCode::Success;
+}
+
+void System::ReleaseSdlTexture(SDL_Texture* texture) {
+	auto end = _managedTextures.end();
+	_managedTextures.erase(std::remove(_managedTextures.begin(), end, (size_t)texture), end);
+}
+
+Coord System::GetTextureSize(SDL_Texture* texture) {
+	Coord size;
+	SDL_QueryTexture(texture, NULL, NULL, &size.x, &size.y);
+	return size;
+}
+
+System::ErrorCode System::LoadTextTexture(std::string text, SDL_Texture*& out_texture) {
+	SDL_Surface* loadedSurface = NULL;
+	ErrorCode err = LoadSdlTextBasic(text, loadedSurface);
+	if (err != ErrorCode::Success) { return err; }
 	//printf("have img %x\n", loadedSurface);
 	out_texture = SDL_CreateTextureFromSurface(_gRenderer, loadedSurface);
 	if (out_texture == NULL)
 	{
-		_errorMessage = string_format("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		_errorMessage = string_format("Unable to create TTF texture for '%s'! SDL Error: %s\n", text.c_str(), SDL_GetError());
 		return ErrorCode::Failure;
 	}
 	SDL_FreeSurface(loadedSurface);
-	_managedTextures.push_back(out_texture);
+	_managedTextures.push_back((size_t)out_texture);
 	return ErrorCode::Success;
 }
 
@@ -388,21 +446,17 @@ void AddDelegateToList(System::SdlEventDelegateListMap& map, int button, size_t 
 
 void RemoveDelegateFromList(System::SdlEventDelegateListMap& map, int button, size_t owner) {
 	auto found = map.find(button);
-	if (found == map.end()) {
-		return;
-	}
+	if (found == map.end()) { return; }
 	found->second.erase(owner);
 }
 
 void System::RegisterMouseDown(int button, size_t owner, System::SdlEventDelegate eventDelegate) {
 	button &= ~SDL_MOUSEMOTION;
-	//printf("DN MOUSE registered %d 0x%016x\n", button, owner);
 	AddDelegateToList(_mouseBindDown, button, owner, eventDelegate);
 }
 
 void System::RegisterMouseUp(int button, size_t owner, System::SdlEventDelegate eventDelegate) {
 	button &= ~SDL_MOUSEMOTION;
-	//printf("UP MOUSE registered %d 0x%016x\n", button, owner);
 	AddDelegateToList(_mouseBindUp, button, owner, eventDelegate);
 }
 

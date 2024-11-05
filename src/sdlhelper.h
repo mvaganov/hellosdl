@@ -58,10 +58,10 @@ inline void CalculateCircleData(float cx, float cy, float radius) {
 		CIRCLE_VALUECOUNT += 2;
 	}
 	if (allocated) {
-		printf("---- %d\n", CIRCLE_VALUECOUNT);
-		for (int i = 0; i < CIRCLE_VALUECOUNT; i += 2) {
-			printf("%d: %d %d\n", i, CIRCLE_VALUES[i + 0], CIRCLE_VALUES[i + 1]);
-		}
+		//printf("---- %d\n", CIRCLE_VALUECOUNT);
+		//for (int i = 0; i < CIRCLE_VALUECOUNT; i += 2) {
+		//	printf("%d: %d %d\n", i, CIRCLE_VALUES[i + 0], CIRCLE_VALUES[i + 1]);
+		//}
 	}
 }
 

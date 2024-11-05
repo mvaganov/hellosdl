@@ -19,9 +19,9 @@ void System::FailFast() {
 }
 
 System::System(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
-_rendererKind(Renderer::None), _running(false), _initialized(false),
+_rendererKind(Renderer::None), _running(false), _initialized(false), _font(NULL),
 _isPressedKeyMask(), _isMousePressed(), _isPressedKeyMaskScancode(),
-_managedSurfaces() {
+_managedSurfaces(), _fonts() {
 	_errorMessage = "";
 	if (_instance) {
 		_instance = this;
@@ -140,7 +140,25 @@ SDL_Surface* System::GetScreenSurface() { return this->_screenSurface; }
 
 SDL_Renderer* System::GetRenderer() { return this->_gRenderer; }
 
-TTF_Font* System::GetFont() { return this->gFont; }
+TTF_Font* System::GetFont() { return this->_font; }
+
+System::ErrorCode System::SetFont(std::string fontName, int size) {
+	std::string savedName = string_format("%s%d", fontName.c_str(), size);
+	auto iter = _fonts.find(savedName);
+	if (iter == _fonts.end()) {
+		std::string path = string_format("font/%s.ttf", fontName.c_str());
+		TTF_Font* font = TTF_OpenFont(path.c_str(), size);
+		if (font == NULL) {
+			_errorMessage = string_format("could not load %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+			System::ErrorCode::MissingResource;
+		}
+		_fonts[savedName] = font;
+		_font = font;
+	} else {
+		_font = iter->second;
+	}
+	return System::ErrorCode::Success;
+}
 
 void System::ClearGraphics() {
 	switch (_rendererKind) {
@@ -349,7 +367,7 @@ System::ErrorCode System::LoadSdlSurfaceBasic(std::string path, SDL_Surface*& ou
 System::ErrorCode System::LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface) {
 	SDL_Color textColor;
 	SDL_GetRenderDrawColor(_gRenderer, &textColor.r, &textColor.g, &textColor.b, &textColor.a);
-	out_surface = TTF_RenderText_Solid(gFont, text.c_str(), textColor);
+	out_surface = TTF_RenderText_Solid(_font, text.c_str(), textColor);
 	if (out_surface == NULL)
 	{
 		_errorMessage = string_format("Failed to create TTF %s! SDL Error: %s\n", text.c_str(), SDL_GetError());
@@ -415,15 +433,15 @@ Coord System::GetTextureSize(SDL_Texture* texture) {
 	return size;
 }
 
-System::ErrorCode System::LoadTextTexture(std::string text, SDL_Texture*& out_texture) {
+System::ErrorCode System::CreateText(std::string text, SDL_Texture*& out_texture) {
 	SDL_Surface* loadedSurface = NULL;
 	ErrorCode err = LoadSdlTextBasic(text, loadedSurface);
 	if (err != ErrorCode::Success) { return err; }
-	//printf("have img %x\n", loadedSurface);
 	out_texture = SDL_CreateTextureFromSurface(_gRenderer, loadedSurface);
 	if (out_texture == NULL)
 	{
 		_errorMessage = string_format("Unable to create TTF texture for '%s'! SDL Error: %s\n", text.c_str(), SDL_GetError());
+		printf("%s", _errorMessage.c_str());
 		return ErrorCode::Failure;
 	}
 	SDL_FreeSurface(loadedSurface);

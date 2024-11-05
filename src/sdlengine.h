@@ -23,6 +23,7 @@ public:
 		InputError = 3,
 		CapabilityLoadFailed = 4,
 		UnsupportedFormat = 5,
+		MissingResource = 6,
 	};
 	enum class Renderer { None = 0, SDL_Surface = 1, SDL_Renderer = 2 };
 
@@ -31,7 +32,7 @@ public:
 	typedef std::map<int, SdlEventDelegateList> SdlEventDelegateListMap;
 private:
 	// TODO rename _currentFount
-	TTF_Font* gFont;
+	TTF_Font* _font;
 	static System* _instance;
 	SDL_Window* _window = NULL;
 	SDL_Surface* _screenSurface = NULL;
@@ -49,6 +50,7 @@ private:
 	bool _initialized;
 	std::vector<SDL_Surface*> _managedSurfaces;
 	std::vector<size_t> _managedTextures;
+	std::map<std::string, TTF_Font*> _fonts;
 public:
 	// TODO rename ErrorMessage
 	std::string _errorMessage;
@@ -63,6 +65,7 @@ public:
 	SDL_Surface* GetScreenSurface();
 	SDL_Renderer* GetRenderer();
 	TTF_Font* GetFont();
+	System::ErrorCode SetFont(std::string fontName, int size);
 	void ClearGraphics();
 	void Render();
 	void ProcessInput();
@@ -72,7 +75,7 @@ public:
 	System::ErrorCode LoadSdlSurface(std::string path, SDL_Surface*& out_surface);
 	System::ErrorCode LoadSdlTexture(std::string path, SDL_Texture*& out_texture);
 	System::ErrorCode LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture);
-	System::ErrorCode LoadTextTexture(std::string text, SDL_Texture*& out_texture);
+	System::ErrorCode CreateText(std::string text, SDL_Texture*& out_texture);
 	void ReleaseSdlTexture(SDL_Texture* texture);
 	Coord GetTextureSize(SDL_Texture* texture);
 	/// <summary>

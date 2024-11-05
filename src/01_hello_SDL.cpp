@@ -21,18 +21,19 @@ int main( int argc, char* args[] )
 	sdl.FailFast();
 	//SDL_Surface* img; sdl.LoadSdlSurface("img/helloworld.bmp", img);
 	SDL_Texture* tex;
+	SDL_Texture* word;
 	sdl.LoadSdlTexture("img/helloworld.png", tex);
 	sdl.FailFast();
 	//SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 	SDL_Renderer* g = sdl.GetRenderer();
 	Rect fillRect(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 	Button button({ 10, 20, 30, 40 }, &sdl);
-	button.onPress = []() {
-		printf("pressed!\n");
-	};
-	button.onRelease = []() {
-		printf("released!\n");
-	};
+	button.onPress = []() { printf("pressed!\n"); };
+	button.onRelease = []() { printf("released!\n"); };
+	SDL_SetRenderDrawColor(g, 0xFF008800);
+	sdl.SetFont("arial", 24);
+	System::ErrorCode wordErr = sdl.CreateText("these are words!", word);
+	Rect wordArea(button.GetPosition(), sdl.GetTextureSize(word));
 	while (sdl.IsRunning()) {
 		TimePoint t0 = Clock::now();
 		sdl.ClearGraphics();
@@ -52,6 +53,7 @@ int main( int argc, char* args[] )
 		SDL_FillCircle(g, 200, 50, 50);
 		SDL_DrawCircle(g, 200, 50, 52);
 		button.Draw(g);
+		SDL_RenderCopy(g, word, NULL, &wordArea);
 		sdl.Render();
 		sdl.ProcessInput();
 		button.Update(&sdl);

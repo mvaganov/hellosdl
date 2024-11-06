@@ -16,8 +16,8 @@ typedef std::chrono::duration<double> HiResDuration;
 
 
 int main( int argc, char* args[] )
-{	System sdl(SCREEN_WIDTH, SCREEN_HEIGHT);
-	System::ErrorCode err = sdl.Init("sdl", System::Renderer::SDL_Renderer);
+{	SdlEngine sdl(SCREEN_WIDTH, SCREEN_HEIGHT);
+	SdlEngine::ErrorCode err = sdl.Init("sdl", SdlEngine::Renderer::SDL_Renderer);
 	sdl.FailFast();
 	//SDL_Surface* img; sdl.LoadSdlSurface("img/helloworld.bmp", img);
 	SDL_Texture* tex;
@@ -32,7 +32,7 @@ int main( int argc, char* args[] )
 	button.onRelease = []() { printf("released!\n"); };
 	SDL_SetRenderDrawColor(g, 0xFF008800);
 	sdl.SetFont("arial", 24);
-	System::ErrorCode wordErr = sdl.CreateText("these are words!", word);
+	SdlEngine::ErrorCode wordErr = sdl.CreateText("these are words!", word);
 	Rect wordArea(button.GetPosition(), sdl.GetTextureSize(word));
 	while (sdl.IsRunning()) {
 		TimePoint t0 = Clock::now();

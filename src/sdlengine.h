@@ -11,7 +11,7 @@
 #include "rect.h"
 #include "sdlhelper.h"
 
-class System
+class SdlEngine
 {
 public:
 	enum class ErrorCode {
@@ -33,7 +33,7 @@ public:
 private:
 	// TODO rename _currentFount
 	TTF_Font* _font;
-	static System* _instance;
+	static SdlEngine* _instance;
 	SDL_Window* _window = NULL;
 	SDL_Surface* _screenSurface = NULL;
 	SDL_Renderer* _gRenderer = NULL;
@@ -56,8 +56,8 @@ public:
 	std::string _errorMessage;
 	Coord MousePosition;
 	int MouseClickState;
-	System(int width, int height);
-	~System();
+	SdlEngine(int width, int height);
+	~SdlEngine();
 	void FailFast();
 	ErrorCode Init(std::string windowName, Renderer renderer);
 	ErrorCode Release();
@@ -65,33 +65,33 @@ public:
 	SDL_Surface* GetScreenSurface();
 	SDL_Renderer* GetRenderer();
 	TTF_Font* GetFont();
-	System::ErrorCode SetFont(std::string fontName, int size);
+	SdlEngine::ErrorCode SetFont(std::string fontName, int size);
 	void ClearGraphics();
 	void Render();
 	void ProcessInput();
-	System::ErrorCode IsPressed(int sdlk, bool& out_pressed);
-	System::ErrorCode LoadSdlSurfaceBasic(std::string path, SDL_Surface*& out_surface);
-	System::ErrorCode LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface);
-	System::ErrorCode LoadSdlSurface(std::string path, SDL_Surface*& out_surface);
-	System::ErrorCode LoadSdlTexture(std::string path, SDL_Texture*& out_texture);
-	System::ErrorCode LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture);
-	System::ErrorCode CreateText(std::string text, SDL_Texture*& out_texture);
+	SdlEngine::ErrorCode IsPressed(int sdlk, bool& out_pressed);
+	SdlEngine::ErrorCode LoadSdlSurfaceBasic(std::string path, SDL_Surface*& out_surface);
+	SdlEngine::ErrorCode LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface);
+	SdlEngine::ErrorCode LoadSdlSurface(std::string path, SDL_Surface*& out_surface);
+	SdlEngine::ErrorCode LoadSdlTexture(std::string path, SDL_Texture*& out_texture);
+	SdlEngine::ErrorCode LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture);
+	SdlEngine::ErrorCode CreateText(std::string text, SDL_Texture*& out_texture);
 	void ReleaseSdlTexture(SDL_Texture* texture);
 	Coord GetTextureSize(SDL_Texture* texture);
 	/// <summary>
-	/// this is set by <see cref="System::ProcessInput"/>
+	/// this is set by <see cref="SdlEngine::ProcessInput"/>
 	/// </summary>
 	/// <param name="sdlk"></param>
 	/// <param name="pressed"></param>
 	/// <returns></returns>
-	System::ErrorCode SetPressed(int sdlk, bool pressed);
+	SdlEngine::ErrorCode SetPressed(int sdlk, bool pressed);
 	std::function<void(int, int)> OnMouseMove;
 	void RegisterMouseDown(int button, size_t owner, SdlEventDelegate eventDeletage);
 	void RegisterMouseUp(int button, size_t owner, SdlEventDelegate eventDeletage);
 	void UnregisterMouseDown(int button, size_t owner);
 	void UnregisterMouseUp(int button, size_t owner);
 private:
-	System::ErrorCode InitSDL_Surface();
-	System::ErrorCode InitSDL_Renderer();
+	SdlEngine::ErrorCode InitSDL_Surface();
+	SdlEngine::ErrorCode InitSDL_Renderer();
 };
 

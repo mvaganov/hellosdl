@@ -27,11 +27,11 @@ public:
 	int color;
 	bool selected;
 	bool held;
-	System* engine;
+	SdlEngine* engine;
 
-	Button(System* engine) : Button({ 0, 0, 10, 10 }, engine) {}
+	Button(SdlEngine* engine) : Button({ 0, 0, 10, 10 }, engine) {}
 
-	Button(SDL_Rect rect, System* engine) : Rect(rect), state(State::Normal), colors(),
+	Button(SDL_Rect rect, SdlEngine* engine) : Rect(rect), state(State::Normal), colors(),
 	selected(false), held(false), color(0), engine(engine) {
 		onPress = Nothing;
 		onRelease = Nothing;
@@ -85,7 +85,7 @@ public:
 		SDL_SetRenderDrawColor(g, oldColor);
 	}
 
-	void Update(System* engine) {
+	void Update(SdlEngine* engine) {
 		bool mouseOver = IsContains(engine->MousePosition);
 		//printf("%d, %d,     %d %d\n", engine->MousePosition.x, engine->MousePosition.y, mouseOver, isPressed);
 		if (mouseOver) {

@@ -12,17 +12,17 @@
 SdlEngine * SdlEngine::_instance = NULL;
 
 void SdlEngine::FailFast() {
-	if (_errorMessage != "") {
-		printf(_errorMessage.c_str());
+	if (ErrorMessage != "") {
+		printf(ErrorMessage.c_str());
 		exit((int)SdlEngine::ErrorCode::Failure);
 	}
 }
 
 SdlEngine::SdlEngine(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
-_rendererKind(Renderer::None), _running(false), _initialized(false), _font(NULL),
+_rendererKind(Renderer::None), _running(false), _initialized(false), _currentFont(NULL),
 _isPressedKeyMask(), _isMousePressed(), _isPressedKeyMaskScancode(),
 _managedSurfaces(), _fonts() {
-	_errorMessage = "";
+	ErrorMessage = "";
 	if (_instance) {
 		_instance = this;
 	}
@@ -55,9 +55,9 @@ SdlEngine::ErrorCode SdlEngine::Release()
 	}
 	switch (_rendererKind) {
 	case Renderer::SDL_Renderer:
-		if (_gRenderer != NULL) {
-			SDL_DestroyRenderer(_gRenderer);
-			_gRenderer = NULL;
+		if (_renderer != NULL) {
+			SDL_DestroyRenderer(_renderer);
+			_renderer = NULL;
 		}
 		break;
 	}
@@ -76,14 +76,14 @@ SdlEngine::ErrorCode SdlEngine::Init(std::string windowName, Renderer renderer)
 {
 	if (_initialized) {
 		// TODO change windowname, or change renderer
-		_errorMessage = string_format("Re-initialization is unsupported");
+		ErrorMessage = string_format("Re-initialization is unsupported");
 		return SdlEngine::ErrorCode::NotImplemented;
 	}
 	_running = false;
 	_rendererKind = Renderer::None;
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		_errorMessage = string_format("SDL could not initialize! SDL_Error: %s", SDL_GetError());
+		ErrorMessage = string_format("SDL could not initialize! SDL_Error: %s", SDL_GetError());
 		return SdlEngine::ErrorCode::InitializationFailure;
 	}
 
@@ -97,7 +97,7 @@ SdlEngine::ErrorCode SdlEngine::Init(std::string windowName, Renderer renderer)
 	_window = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _width, _height, SDL_WINDOW_SHOWN);
 	if (_window == NULL)
 	{
-		_errorMessage = string_format("Window could not be created! SDL_Error: %s", SDL_GetError());
+		ErrorMessage = string_format("Window could not be created! SDL_Error: %s", SDL_GetError());
 		return SdlEngine::ErrorCode::WindowCreationFailure;
 	}
 
@@ -111,18 +111,18 @@ SdlEngine::ErrorCode SdlEngine::Init(std::string windowName, Renderer renderer)
 		errorCode = InitSDL_Renderer();
 		break;
 	default:
-		_errorMessage = string_format("Renderer %d not implemented!", renderer);
+		ErrorMessage = string_format("Renderer %d not implemented!", renderer);
 		errorCode = ErrorCode::NotImplemented;
 		break;
 	}
 	// TODO create a separate image module, and be able to query if these image types can be loaded: IMG_INIT_JPG, IMG_INIT_PNG, IMG_INIT_TIF, IMG_INIT_WEBP, IMG_INIT_JXL, IMG_INIT_AVIF
 	int imgFlags = IMG_INIT_PNG;
 	if (!(IMG_Init(imgFlags) & imgFlags)) {
-		_errorMessage = string_format("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+		ErrorMessage = string_format("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 		return ErrorCode::CapabilityLoadFailed;
 	}
 	if (TTF_Init() == -1) {
-		_errorMessage = string_format("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+		ErrorMessage = string_format("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
 		return ErrorCode::CapabilityLoadFailed;
 	}
 	if (errorCode != ErrorCode::Success) {
@@ -138,9 +138,9 @@ bool SdlEngine::IsRunning() {
 
 SDL_Surface* SdlEngine::GetScreenSurface() { return this->_screenSurface; }
 
-SDL_Renderer* SdlEngine::GetRenderer() { return this->_gRenderer; }
+SDL_Renderer* SdlEngine::GetRenderer() { return this->_renderer; }
 
-TTF_Font* SdlEngine::GetFont() { return this->_font; }
+TTF_Font* SdlEngine::GetFont() { return this->_currentFont; }
 
 SdlEngine::ErrorCode SdlEngine::SetFont(std::string fontName, int size) {
 	std::string savedName = string_format("%s%d", fontName.c_str(), size);
@@ -149,13 +149,13 @@ SdlEngine::ErrorCode SdlEngine::SetFont(std::string fontName, int size) {
 		std::string path = string_format("font/%s.ttf", fontName.c_str());
 		TTF_Font* font = TTF_OpenFont(path.c_str(), size);
 		if (font == NULL) {
-			_errorMessage = string_format("could not load %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+			ErrorMessage = string_format("could not load %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 			SdlEngine::ErrorCode::MissingResource;
 		}
 		_fonts[savedName] = font;
-		_font = font;
+		_currentFont = font;
 	} else {
-		_font = iter->second;
+		_currentFont = iter->second;
 	}
 	return SdlEngine::ErrorCode::Success;
 }
@@ -166,7 +166,7 @@ void SdlEngine::ClearGraphics() {
 		SDL_FillRect(_screenSurface, NULL, SDL_MapRGBA(_screenSurface->format, 0xFF, 0xFF, 0xFF, 0x00));
 		break;
 	case Renderer::SDL_Renderer:
-		SDL_RenderClear(_gRenderer);
+		SDL_RenderClear(_renderer);
 		break;
 	}
 }
@@ -177,7 +177,7 @@ void SdlEngine::Render() {
 		SDL_UpdateWindowSurface(_window);
 		break;
 	case Renderer::SDL_Renderer:
-		SDL_RenderPresent(_gRenderer);
+		SDL_RenderPresent(_renderer);
 		break;
 	}
 }
@@ -253,7 +253,7 @@ SdlEngine::ErrorCode SdlEngine::InitSDL_Surface() {
 	_screenSurface = SDL_GetWindowSurface(_window);
 	if (_screenSurface == NULL)
 	{
-		_errorMessage = string_format("Window surface could not be retrieved! SDL_Error: %s", SDL_GetError());
+		ErrorMessage = string_format("Window surface could not be retrieved! SDL_Error: %s", SDL_GetError());
 		return SdlEngine::ErrorCode::WindowCreationFailure;
 	}
 	SDL_FillRect(_screenSurface, NULL, SDL_MapRGB(_screenSurface->format, 0xFF, 0xFF, 0xFF));
@@ -261,14 +261,14 @@ SdlEngine::ErrorCode SdlEngine::InitSDL_Surface() {
 }
 
 SdlEngine::ErrorCode SdlEngine::InitSDL_Renderer() {
-	_gRenderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
-	if (_gRenderer == NULL)
+	_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
+	if (_renderer == NULL)
 	{
-		_errorMessage = string_format("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+		ErrorMessage = string_format("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
 		return SdlEngine::ErrorCode::WindowCreationFailure;
 	}
-	SDL_SetRenderDrawBlendMode(_gRenderer, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(_gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	return SdlEngine::ErrorCode::Success;
 }
 
@@ -286,11 +286,11 @@ SdlEngine::ErrorCode SdlEngine::SetPressed(int sdlk, bool pressed) {
 		field = this->_isPressedKeyMaskScancode;
 #ifndef NDEBUG
 		if (sdlk < 0 || sdlk >= SDL_NUM_SCANCODES) {
-			_errorMessage = string_format("Unknown scancode %d", sdlk);
+			ErrorMessage = string_format("Unknown scancode %d", sdlk);
 			return ErrorCode::InputError;
 		}
 	} else {
-		_errorMessage = string_format("Unknown keycode %d", sdlk);
+		ErrorMessage = string_format("Unknown keycode %d", sdlk);
 		return ErrorCode::InputError;
 #endif
 	}
@@ -318,11 +318,11 @@ SdlEngine::ErrorCode SdlEngine::IsPressed(int sdlk, bool& out_pressed) {
 		field = this->_isPressedKeyMaskScancode;
 #ifndef NDEBUG
 		if (sdlk < 0 || sdlk >= SDL_NUM_SCANCODES) {
-			_errorMessage = string_format("Unknown scancode %d", sdlk);
+			ErrorMessage = string_format("Unknown scancode %d", sdlk);
 			return ErrorCode::InputError;
 		}
 	} else {
-		_errorMessage = string_format("Unknown keycode %d", sdlk);
+		ErrorMessage = string_format("Unknown keycode %d", sdlk);
 		return ErrorCode::InputError;
 #endif
 	}
@@ -353,12 +353,12 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlSurfaceBasic(std::string path, SDL_Surfac
 	} else if (ends_with(lowercasePath, "png")) {
 		out_surface = IMG_Load(path.c_str());
 	} else {
-		_errorMessage = string_format("Unable to load image format %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		ErrorMessage = string_format("Unable to load image format %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 		return ErrorCode::UnsupportedFormat;
 	}
 	if (out_surface == NULL)
 	{
-		_errorMessage = string_format("Failed to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		ErrorMessage = string_format("Failed to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 		return ErrorCode::Failure;
 	}
 	return ErrorCode::Success;
@@ -366,11 +366,11 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlSurfaceBasic(std::string path, SDL_Surfac
 
 SdlEngine::ErrorCode SdlEngine::LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface) {
 	SDL_Color textColor;
-	SDL_GetRenderDrawColor(_gRenderer, &textColor.r, &textColor.g, &textColor.b, &textColor.a);
-	out_surface = TTF_RenderText_Solid(_font, text.c_str(), textColor);
+	SDL_GetRenderDrawColor(_renderer, &textColor.r, &textColor.g, &textColor.b, &textColor.a);
+	out_surface = TTF_RenderText_Solid(_currentFont, text.c_str(), textColor);
 	if (out_surface == NULL)
 	{
-		_errorMessage = string_format("Failed to create TTF %s! SDL Error: %s\n", text.c_str(), SDL_GetError());
+		ErrorMessage = string_format("Failed to create TTF %s! SDL Error: %s\n", text.c_str(), SDL_GetError());
 		return ErrorCode::Failure;
 	}
 	return ErrorCode::Success;
@@ -384,7 +384,7 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlSurface(std::string path, SDL_Surface*& o
 	out_surface = SDL_ConvertSurface(loadedSurface, _screenSurface->format, 0);
 	if (out_surface == NULL)
 	{
-		_errorMessage = string_format("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		ErrorMessage = string_format("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 		return ErrorCode::Failure;
 	}
 	SDL_FreeSurface(loadedSurface);
@@ -398,13 +398,13 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlTexture(std::string path, SDL_Texture*& o
 	if (err != ErrorCode::Success) { return err; }
 	err = LoadSdlTexture(loadedSurface, out_texture);
 	if (err != ErrorCode::Success) {
-		_errorMessage = string_format("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		ErrorMessage = string_format("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 		return err;
 	}
 	////printf("have img %x\n", loadedSurface);
-	//out_texture = SDL_CreateTextureFromSurface(_gRenderer, loadedSurface);
+	//out_texture = SDL_CreateTextureFromSurface(_renderer, loadedSurface);
 	//if (out_texture == NULL) {
-	//	_errorMessage = string_format("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+	//	ErrorMessage = string_format("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 	//	return ErrorCode::Failure;
 	//}
 	//_managedTextures.push_back(out_texture);
@@ -413,9 +413,9 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlTexture(std::string path, SDL_Texture*& o
 }
 
 SdlEngine::ErrorCode SdlEngine::LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture) {
-	out_texture = SDL_CreateTextureFromSurface(_gRenderer, loadedSurface);
+	out_texture = SDL_CreateTextureFromSurface(_renderer, loadedSurface);
 	if (out_texture == NULL) {
-		_errorMessage = string_format("Unable to create texture from SDL_Surface! SDL Error: %s\n", SDL_GetError());
+		ErrorMessage = string_format("Unable to create texture from SDL_Surface! SDL Error: %s\n", SDL_GetError());
 		return ErrorCode::Failure;
 	}
 	_managedTextures.push_back((size_t)out_texture);
@@ -437,11 +437,11 @@ SdlEngine::ErrorCode SdlEngine::CreateText(std::string text, SDL_Texture*& out_t
 	SDL_Surface* loadedSurface = NULL;
 	ErrorCode err = LoadSdlTextBasic(text, loadedSurface);
 	if (err != ErrorCode::Success) { return err; }
-	out_texture = SDL_CreateTextureFromSurface(_gRenderer, loadedSurface);
+	out_texture = SDL_CreateTextureFromSurface(_renderer, loadedSurface);
 	if (out_texture == NULL)
 	{
-		_errorMessage = string_format("Unable to create TTF texture for '%s'! SDL Error: %s\n", text.c_str(), SDL_GetError());
-		printf("%s", _errorMessage.c_str());
+		ErrorMessage = string_format("Unable to create TTF texture for '%s'! SDL Error: %s\n", text.c_str(), SDL_GetError());
+		printf("%s", ErrorMessage.c_str());
 		return ErrorCode::Failure;
 	}
 	SDL_FreeSurface(loadedSurface);

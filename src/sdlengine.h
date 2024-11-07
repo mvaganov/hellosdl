@@ -31,12 +31,11 @@ public:
 	typedef std::map<size_t, SdlEventDelegate> SdlEventDelegateList;
 	typedef std::map<int, SdlEventDelegateList> SdlEventDelegateListMap;
 private:
-	// TODO rename _currentFount
-	TTF_Font* _font;
+	TTF_Font* _currentFont;
 	static SdlEngine* _instance;
 	SDL_Window* _window = NULL;
 	SDL_Surface* _screenSurface = NULL;
-	SDL_Renderer* _gRenderer = NULL;
+	SDL_Renderer* _renderer = NULL;
 	int _width, _height;
 	Renderer _rendererKind;
 	SdlEventDelegateListMap _keyBindDown;
@@ -52,8 +51,7 @@ private:
 	std::vector<size_t> _managedTextures;
 	std::map<std::string, TTF_Font*> _fonts;
 public:
-	// TODO rename ErrorMessage
-	std::string _errorMessage;
+	std::string ErrorMessage;
 	Coord MousePosition;
 	int MouseClickState;
 	SdlEngine(int width, int height);

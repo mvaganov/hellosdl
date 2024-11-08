@@ -4,6 +4,8 @@
 
 class Rect : public SDL_Rect {
 public:
+	enum class Dir { Up = 0, Left = 1, Down = 2, Right = 3, Count = 4 };
+
 	Rect(const Coord& min, const Coord& size) : Rect(min.x, min.y, size.x, size.y) { }
 	Rect(const Rect& o) : Rect(o.x, o.y, o.w, o.h) {}
 	Rect(int x, int y, int width, int height) {
@@ -35,6 +37,7 @@ public:
 
 	Coord GetMin() const { return Coord(x,y); }
 	Coord GetMax() const { return Coord(x+w, y+h); }
+	Coord GetCenter() const { return Coord(x + w / 2, y + h / 2); }
 	void SetMin(const Coord& value) { Coord max = GetMax(); Min() = value; SetMax(max); }
 	void SetMax(const Coord& value) { x = value.x - x; y = value.y - y; }
 	void SetMinMax(Coord min, Coord max) {

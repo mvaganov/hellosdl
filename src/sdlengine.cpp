@@ -182,70 +182,72 @@ void SdlEngine::Render() {
 	}
 }
 
-void ExecuteDelegates(SdlEngine::SdlEventDelegateList& delegates, SDL_Event e) {
+void SdlEngine::ProcessDelegates(EventDelegateListMap& delegates, int id, const SDL_Event& e) {
+	EventDelegateListMap::iterator found = delegates.find(id);
+	if (found != delegates.end()) {
+		ProcessDelegates(found->second, e);
+	}
+}
+
+void SdlEngine::ProcessDelegates(SdlEngine::EventDelegateKeyedList& delegates, const SDL_Event& e) {
 	for (auto it = delegates.begin(); it != delegates.end(); it++) {
-		//printf("%d  ", it->first);
 		it->second(e);
 	}
-	//for (int i = 0; i < delegates.size(); ++i) {
-	//	delegates[i](e);
-	//}
+}
+
+void SdlEngine::ProcessDelegates(SdlEngine::EventKeyedList& delegates){
+	for (auto it = delegates.begin(); it != delegates.end(); it++) {
+		it->second();
+	}
+}
+
+void SdlEngine::ProcessEvent(const SDL_Event& e)
+{
+	switch (e.type) {
+	case SDL_QUIT:
+		_running = false;
+		break;
+	case SDL_KEYDOWN:
+		SetPressed(e.key.keysym.sym, true);
+		ProcessDelegates(_keyBindDown, e.key.keysym.sym, e);
+		break;
+	case SDL_KEYUP:
+		SetPressed(e.key.keysym.sym, false);
+		ProcessDelegates(_keyBindUp, e.key.keysym.sym, e);
+		break;
+	case SDL_MOUSEMOTION:
+		MousePosition.x = e.motion.x;
+		MousePosition.y = e.motion.y;
+		//printf("mousemotion x%d, y%d, type%d, dx%d, dy%d\n",
+		//	e.motion.x, e.motion.y, e.motion.type, e.motion.xrel, e.motion.yrel);
+		break;
+	case SDL_MOUSEBUTTONUP:
+		MousePosition.x = e.button.x;
+		MousePosition.y = e.button.y;
+		SetPressed(SDL_MOUSEMOTION | e.button.button, false);
+		//printf("####################### UP BTN%d   %d\n", e.button.button, e.button.state);
+		ProcessDelegates(_mouseBindUp, e.button.button, e);
+		//printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
+		//	e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
+		break;
+	case SDL_MOUSEBUTTONDOWN:
+		MousePosition.x = e.button.x;
+		MousePosition.y = e.button.y;
+		SetPressed(SDL_MOUSEMOTION | e.button.button, true);
+		//printf("####################### DN BTN%d   %d\n", e.button.button, e.button.state);
+		ProcessDelegates(_mouseBindDown, e.button.button, e);
+		//printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
+		//	e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
+		break;
+	}
 }
 
 void SdlEngine::ProcessInput() {
 	//Hack to get _window to stay up
 	SDL_Event e;
-	std::map<int, SdlEventDelegateList>::iterator found;
+	std::map<int, EventDelegateKeyedList>::iterator found;
 	while (SDL_PollEvent(&e)) {
-		switch (e.type) {
-		case SDL_QUIT:
-			_running = false;
-			break;
-		case SDL_KEYDOWN:
-			SetPressed(e.key.keysym.sym, true);
-			found = _keyBindDown.find(e.key.keysym.sym);
-			if (found != _keyBindDown.end()) {
-				ExecuteDelegates(found->second, e);
-			}
-			break;
-		case SDL_KEYUP:
-			SetPressed(e.key.keysym.sym, false);
-			found = _keyBindUp.find(e.key.keysym.sym);
-			if (found != _keyBindUp.end()) {
-				ExecuteDelegates(found->second, e);
-			}
-			break;
-		case SDL_MOUSEMOTION:
-			MousePosition.x = e.motion.x;
-			MousePosition.y = e.motion.y;
-			//printf("mousemotion x%d, y%d, type%d, dx%d, dy%d\n",
-			//	e.motion.x, e.motion.y, e.motion.type, e.motion.xrel, e.motion.yrel);
-			break;
-		case SDL_MOUSEBUTTONUP:
-			MousePosition.x = e.button.x;
-			MousePosition.y = e.button.y;
-			SetPressed(SDL_MOUSEMOTION | e.button.button, false);
-			//printf("####################### UP BTN%d   %d\n", e.button.button, e.button.state);
-			found = _mouseBindUp.find(e.button.button);
-			if (found != _mouseBindUp.end()) {
-				ExecuteDelegates(found->second, e);
-			}
-			//printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
-			//	e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
-			break;
-		case SDL_MOUSEBUTTONDOWN:
-			MousePosition.x = e.button.x;
-			MousePosition.y = e.button.y;
-			SetPressed(SDL_MOUSEMOTION | e.button.button, true);
-			//printf("####################### DN BTN%d   %d\n", e.button.button, e.button.state);
-			found = _mouseBindDown.find(e.button.button);
-			if (found != _mouseBindDown.end()) {
-				ExecuteDelegates(found->second, e);
-			}
-			//printf("mousemotion x%d, y%d, type%d, clicks%d, which%d, state%d, button%d\n",
-			//	e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
-			break;
-		}
+		ProcessEvent(e);
 	}
 }
 
@@ -449,33 +451,41 @@ SdlEngine::ErrorCode SdlEngine::CreateText(std::string text, SDL_Texture*& out_t
 	return ErrorCode::Success;
 }
 
-void AddDelegateToList(SdlEngine::SdlEventDelegateListMap& map, int button, size_t owner, SdlEngine::SdlEventDelegate eventDelegate) {
-	SdlEngine::SdlEventDelegateList* list = NULL;
+void AddDelegateToList(SdlEngine::EventDelegateListMap& map, int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
+	SdlEngine::EventDelegateKeyedList* list = NULL;
 	auto found = map.find(button);
 	if (found != map.end()) {
 		list = &found->second;
 	} else {
-		map[button] = SdlEngine::SdlEventDelegateList();
+		map[button] = SdlEngine::EventDelegateKeyedList();
 		auto found = map.find(button);
 		list = &found->second;
 	}
 	(*list)[owner] = eventDelegate;
 }
 
-void RemoveDelegateFromList(SdlEngine::SdlEventDelegateListMap& map, int button, size_t owner) {
+void RemoveDelegateFromList(SdlEngine::EventDelegateListMap& map, int button, size_t owner) {
 	auto found = map.find(button);
 	if (found == map.end()) { return; }
 	found->second.erase(owner);
 }
 
-void SdlEngine::RegisterMouseDown(int button, size_t owner, SdlEngine::SdlEventDelegate eventDelegate) {
+void SdlEngine::RegisterMouseDown(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
 	button &= ~SDL_MOUSEMOTION;
 	AddDelegateToList(_mouseBindDown, button, owner, eventDelegate);
 }
 
-void SdlEngine::RegisterMouseUp(int button, size_t owner, SdlEngine::SdlEventDelegate eventDelegate) {
+void SdlEngine::RegisterMouseUp(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
 	button &= ~SDL_MOUSEMOTION;
 	AddDelegateToList(_mouseBindUp, button, owner, eventDelegate);
+}
+
+void SdlEngine::RegisterKeyDown(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
+	AddDelegateToList(_keyBindDown, button, owner, eventDelegate);
+}
+
+void SdlEngine::RegisterKeyUp(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
+	AddDelegateToList(_keyBindUp, button, owner, eventDelegate);
 }
 
 void SdlEngine::UnregisterMouseDown(int button, size_t owner) {
@@ -484,6 +494,14 @@ void SdlEngine::UnregisterMouseDown(int button, size_t owner) {
 
 void SdlEngine::UnregisterMouseUp(int button, size_t owner) {
 	RemoveDelegateFromList(_mouseBindUp, button, owner);
+}
+
+void SdlEngine::UnregisterKeyDown(int button, size_t owner) {
+	RemoveDelegateFromList(_keyBindDown, button, owner);
+}
+
+void SdlEngine::UnregisterKeyUp(int button, size_t owner) {
+	RemoveDelegateFromList(_keyBindUp, button, owner);
 }
 
 #undef nameof

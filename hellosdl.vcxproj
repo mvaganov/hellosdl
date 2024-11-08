@@ -142,7 +142,9 @@
     <ClInclude Include="src\button.h" />
     <ClInclude Include="src\coord.h" />
     <ClInclude Include="src\rect.h" />
+    <ClInclude Include="src\sdleventprocessor.h" />
     <ClInclude Include="src\sdlhelper.h" />
+    <ClInclude Include="src\selectablerect.h" />
     <ClInclude Include="src\stringstuff.h" />
     <ClInclude Include="src\sdlengine.h" />
   </ItemGroup>

@@ -27,9 +27,11 @@ public:
 	};
 	enum class Renderer { None = 0, SDL_Surface = 1, SDL_Renderer = 2 };
 
-	typedef std::function<void(SDL_Event)> SdlEventDelegate;
-	typedef std::map<size_t, SdlEventDelegate> SdlEventDelegateList;
-	typedef std::map<int, SdlEventDelegateList> SdlEventDelegateListMap;
+	typedef std::function<void(SDL_Event)> EventDelegate;
+	typedef std::map<size_t, EventDelegate> EventDelegateKeyedList;
+	typedef std::map<int, EventDelegateKeyedList> EventDelegateListMap;
+	typedef std::function<void()> TriggeredEvent;
+	typedef std::map<size_t, TriggeredEvent> EventKeyedList;
 private:
 	TTF_Font* _currentFont;
 	static SdlEngine* _instance;
@@ -38,10 +40,10 @@ private:
 	SDL_Renderer* _renderer = NULL;
 	int _width, _height;
 	Renderer _rendererKind;
-	SdlEventDelegateListMap _keyBindDown;
-	SdlEventDelegateListMap _keyBindUp;
-	SdlEventDelegateListMap _mouseBindDown;
-	SdlEventDelegateListMap _mouseBindUp;
+	EventDelegateListMap _keyBindDown;
+	EventDelegateListMap _keyBindUp;
+	EventDelegateListMap _mouseBindDown;
+	EventDelegateListMap _mouseBindUp;
 	int _isPressedKeyMask[8];
 	int _isPressedKeyMaskScancode[16];
 	int _isMousePressed[1];
@@ -84,12 +86,19 @@ public:
 	/// <returns></returns>
 	SdlEngine::ErrorCode SetPressed(int sdlk, bool pressed);
 	std::function<void(int, int)> OnMouseMove;
-	void RegisterMouseDown(int button, size_t owner, SdlEventDelegate eventDeletage);
-	void RegisterMouseUp(int button, size_t owner, SdlEventDelegate eventDeletage);
+	void RegisterMouseDown(int button, size_t owner, EventDelegate eventDeletage);
+	void RegisterMouseUp(int button, size_t owner, EventDelegate eventDeletage);
+	void RegisterKeyDown(int key, size_t owner, EventDelegate eventDelegate);
+	void RegisterKeyUp(int key, size_t owner, EventDelegate eventDelegate);
 	void UnregisterMouseDown(int button, size_t owner);
 	void UnregisterMouseUp(int button, size_t owner);
+	void UnregisterKeyDown(int button, size_t owner);
+	void UnregisterKeyUp(int button, size_t owner);
+	void ProcessEvent(const SDL_Event& e);
+	static void ProcessDelegates(SdlEngine::EventDelegateListMap& delegates, int id, const SDL_Event& e);
+	static void ProcessDelegates(SdlEngine::EventDelegateKeyedList& delegates, const SDL_Event& e);
+	static void ProcessDelegates(SdlEngine::EventKeyedList& delegates);
 private:
 	SdlEngine::ErrorCode InitSDL_Surface();
 	SdlEngine::ErrorCode InitSDL_Renderer();
 };
-

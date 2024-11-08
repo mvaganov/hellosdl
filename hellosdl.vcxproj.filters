@@ -50,5 +50,11 @@
     <ClInclude Include="src\button.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\selectablerect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sdleventprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

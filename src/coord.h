@@ -60,6 +60,9 @@ public:
 		y = (y < min.y) ? min.y : (y > max.y) ? max.y : y;
 	}
 
+	inline float MagnitudeSq() const { return (float)(x * x + y * y); }
+	float Magnitude() const { return sqrt(MagnitudeSq()); }
+
 	//public static Coord SizeOf(Array map) {
 	//	return new Coord { y = (short)map.GetLength(0), x = (short)map.GetLength(1) };
 	//}
@@ -110,6 +113,11 @@ public:
 	static int ManhattanDistance(Coord a, Coord b) {
 		Coord delta = b - a;
 		return abs(delta.x) + abs(delta.y);
+	}
+
+	static float Distance(Coord a, Coord b) {
+		Coord delta = b - a;
+		return (float)sqrt(delta.x * delta.x + delta.y * delta.y);
 	}
 
 	void Set(int x, int y) {

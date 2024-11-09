@@ -143,15 +143,29 @@ public:
 		};
 		int dir;
 		// go right
+		// TODO make the rest like this
 		dir = (int)Rect::Dir::Right;
 		for (int i = 0; i < (int)horizontal.size(); ++i) {
 			int self = horizontal[i].rect;
+			float bestDist = 0, dist;
+			int best = -1;
 			for (int o = i + 1; o < horizontal.size(); ++o) {
+				// TODO make this a function?
 				int other = horizontal[o].rect;
-				if (goingThisWay[dir](self, other)) {
-					rects[self]->SetNavigation((Rect::Dir)dir, rects[other]);
-					break;
+				dist = goingThisWay[dir](self, other);
+				if (dist > 0 && (best < 0 || dist < bestDist)) {
+					bestDist = dist;
+					best = other;
+					if (o < horizontal.size() - 1) {
+						int next = horizontal[o + 1].rect;
+						if (rects[next]->y != rects[other]->y) {
+							break;
+						}
+					}
 				}
+			}
+			if (best >= 0) {
+				rects[self]->SetNavigation((Rect::Dir)dir, rects[best]);
 			}
 		}
 		// go left

@@ -32,10 +32,11 @@ public:
 	bool operator !=(const Coord& o) const { return !Equals(o); }
 	Coord operator +(const Coord& o) const { return Coord(x + o.x, y + o.y); }
 	Coord operator -(const Coord& o) const { return Coord(x - o.x, y - o.y); }
+	Coord operator /(const int& o) const { return Coord(x / o, y / o); }
 	Coord& operator -=(const Coord& o) { x -= o.x; y -= o.y; return *this; }
 	Coord& operator +=(const Coord& o) { x += o.x; y += o.y; return *this; }
 	Coord operator -() const { return Coord(-x, -y); }
-	Coord& operator=(const Coord& o) {
+	Coord& operator =(const Coord& o) {
 		if (this == &o) { return *this; }
 		x = o.x; y = o.y;
 		return *this;

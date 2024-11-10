@@ -134,6 +134,7 @@
   <ItemGroup>
     <ClCompile Include="src\01_hello_SDL.cpp" />
     <ClCompile Include="src\coord.cpp" />
+    <ClCompile Include="src\rect.cpp" />
     <ClCompile Include="src\sdlhelper.cpp" />
     <ClCompile Include="src\stringstuff.cpp" />
     <ClCompile Include="src\sdlengine.cpp" />

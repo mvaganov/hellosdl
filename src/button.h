@@ -26,14 +26,13 @@ private:
 	Button::State _buttonState;
 	int color;
 	bool held;
-	SdlEngine* engine;
 public:
 	Colors Colors;
 
 	Button(SdlEngine* engine) : Button({ 0, 0, 10, 10 }, engine) {}
 
 	Button(SDL_Rect rect, SdlEngine* engine) : SelectableRect(rect), _buttonState(State::Normal), Colors(),
-	held(false), color(0), engine(engine) {
+	held(false), color(0) {
 		onPress = Nothing;
 		onRelease = Nothing;
 		engine->RegisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandlePress(e); });
@@ -41,14 +40,15 @@ public:
 	}
 
 	~Button() {
-		engine->UnregisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this);
-		engine->UnregisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this);
+		SdlEngine* sdl = SdlEngine::GetInstance();
+		sdl->UnregisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this);
+		sdl->UnregisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this);
 	}
 
 	void HandlePress(SDL_Event e) {
 		switch (e.button.state) {
 		case SDL_PRESSED: {
-			bool mouseOver = IsContains(engine->MousePosition);
+			bool mouseOver = IsContains(SdlEngine::GetInstance()->MousePosition);
 			_selected = mouseOver;
 			if (mouseOver) {
 				held = true;
@@ -83,6 +83,8 @@ public:
 		UpdateColor();
 		SDL_SetRenderDrawColor(g, color);
 		RenderFillRect(g);
+		SDL_SetRenderDrawColor(g, 0xff00ff00);
+		DrawNavigation(g);
 		SDL_SetRenderDrawColor(g, oldColor);
 	}
 

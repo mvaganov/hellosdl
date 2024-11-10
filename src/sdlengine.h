@@ -32,6 +32,7 @@ public:
 	typedef std::map<int, EventDelegateKeyedList> EventDelegateListMap;
 	typedef std::function<void()> TriggeredEvent;
 	typedef std::map<size_t, TriggeredEvent> EventKeyedList;
+	static SdlEngine* GetInstance() { return _instance; }
 private:
 	TTF_Font* _currentFont;
 	static SdlEngine* _instance;

@@ -23,8 +23,10 @@ _rendererKind(Renderer::None), _running(false), _initialized(false), _currentFon
 _isPressedKeyMask(), _isMousePressed(), _isPressedKeyMaskScancode(),
 _managedSurfaces(), _fonts() {
 	ErrorMessage = "";
-	if (_instance) {
+	if (_instance == NULL) {
 		_instance = this;
+	} else {
+		printf("duplicate SdlEngine being created? already have at %016llux", (size_t)_instance);
 	}
 	CLEAR_ARRAY(_isPressedKeyMask);
 	CLEAR_ARRAY(_isPressedKeyMaskScancode);

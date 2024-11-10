@@ -5,6 +5,7 @@
 class Rect : public SDL_Rect {
 public:
 	enum class Dir { Up = 0, Left = 1, Down = 2, Right = 3, Count = 4 };
+	static int DirColor[];
 
 	Rect(const Coord& min, const Coord& size) : Rect(min.x, min.y, size.x, size.y) { }
 	Rect(const Rect& o) : Rect(o.x, o.y, o.w, o.h) {}

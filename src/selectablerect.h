@@ -5,10 +5,12 @@
 #include <functional>
 #include <algorithm>
 
+// TODO register self with SdlEngine, and mark as needing navigation recalculation
+// TODO navigatable flag, which allows this to be skipped for navigation calculations
 class SelectableRect : public Rect {
 protected:
 	bool _selected;
-	SelectableRect* _next[4];
+	SelectableRect* _next[(int)Rect::Dir::Count];
 public:
 	SdlEngine::EventDelegateKeyedList OnKeyEvent;
 	SdlEngine::EventKeyedList OnSelected;
@@ -18,11 +20,11 @@ public:
 		return _selected;
 	}
 
-	bool SetSelectedNoNotify(bool selected) {
+	void SetSelectedNoNotify(bool selected) {
 		_selected = selected;
 	}
 
-	bool SetSelected(bool selected) {
+	void SetSelected(bool selected) {
 		if (selected != _selected) {
 			if (selected) {
 				NotifySelect();
@@ -35,6 +37,7 @@ public:
 
 	SelectableRect(SDL_Rect rect) : Rect(rect), _selected(false), _next() {
 		memset(_next, NULL, sizeof(_next));
+		OnKeyEvent[(size_t)this] = [this](SDL_Event e) { HandleNavigationKey(e); };
 	}
 
 	void ProcessInput(const SDL_Event& e) {
@@ -51,10 +54,23 @@ public:
 	}
 
 	void NotifyUnselect() {
-		SdlEngine::ProcessDelegates(OnSelected);
+		SdlEngine::ProcessDelegates(OnUnselected);
+	}
+
+	void HandleNavigationKey(SDL_Event keyPress) {
+		if (keyPress.type != SDL_KEYDOWN) {
+			return;
+		}
+		switch (keyPress.key.keysym.sym) {
+		case SDLK_UP: Navigate(Rect::Dir::Up); break;
+		case SDLK_LEFT: Navigate(Rect::Dir::Left); break;
+		case SDLK_DOWN: Navigate(Rect::Dir::Down); break;
+		case SDLK_RIGHT: Navigate(Rect::Dir::Right); break;
+		}
 	}
 
 	void Navigate(Rect::Dir dir) {
+		printf("navigate %d\n", dir);
 		SelectableRect* next = _next[(int)dir];
 		if (next == NULL) {
 			return;
@@ -79,128 +95,79 @@ public:
 	};
 
 	static void SetupNavigation(const std::vector<SelectableRect*>& rects) {
-		std::vector<CenterRect> horizontal, vertical;
 		std::vector<Coord> centers;
-		horizontal.reserve(rects.size());
-		vertical.reserve(rects.size());
 		centers.reserve(rects.size());
 		for (int i = 0; i < rects.size(); ++i) {
 			rects[i]->ClearNavigation();
 			Coord center = rects[i]->GetCenter();
 			centers.push_back(center);
-			horizontal.push_back({ center.x, i });
-			vertical.push_back({ center.y, i });
 		}
-		std::sort(horizontal.begin(), horizontal.end(), [](CenterRect a, CenterRect b) { return a.pos < b.pos; });
-		std::sort(vertical.begin(), vertical.end(), [](CenterRect a, CenterRect b) { return a.pos < b.pos; });
 
-		for (int i = 0; i < horizontal.size(); ++i) {
-			Coord c = centers[horizontal[i].rect];
-			printf("%d, %d  ", c.x, c.y);
-		}
-		putchar('\n');
-		for (int i = 0; i < vertical.size(); ++i) {
-			Coord c = centers[vertical[i].rect];
-			printf("%d, %d  ", c.x, c.y);
-		}
-		putchar('\n');
-
-		std::function<float(int self, int other)> goingThisWay[4] = {
+		std::function<bool(Coord delta)> CandidateVetting[(int)Rect::Dir::Count] = {
 			// up
-			[&centers](int self, int other) -> float {
-				Coord delta = centers[other] - centers[self];
-				if (delta.y < 0 && abs(delta.y) >= abs(delta.x)) {
-					return delta.Magnitude();
-				}
-				return -1;
+			[](Coord delta) -> bool {
+				return delta.y < 0 && abs(delta.x) <= abs(delta.y);
 			},
 			// left
-			[&centers](int self, int other) -> float {
-				Coord delta = centers[other] - centers[self];
-				if (delta.x < 0 && abs(delta.x) >= abs(delta.y)) {
-					return delta.Magnitude();
-				}
-				return -1;
+			[](Coord delta) -> bool {
+				return delta.x < 0 && abs(delta.x) >= abs(delta.y);
 			},
 			// down
-			[&centers](int self, int other) -> float {
-				Coord delta = centers[other] - centers[self];
-				if (delta.y > 0 && abs(delta.y) >= abs(delta.x)) {
-					return delta.Magnitude();
-				}
-				return -1;
+			[](Coord delta) -> bool {
+				return delta.y > 0 && abs(delta.x) <= abs(delta.y);
 			},
 			// right
-			[&centers](int self, int other) -> float {
-				Coord delta = centers[other] - centers[self];
-				if (delta.x > 0 && abs(delta.x) >= abs(delta.y)) {
-					return delta.Magnitude();
-				}
-				return -1;
+			[](Coord delta) -> bool {
+				return delta.x > 0 && abs(delta.x) >= abs(delta.y);
 			},
 		};
-		int dir;
-		// go right
-		// TODO make the rest like this
-		dir = (int)Rect::Dir::Right;
-		for (int i = 0; i < (int)horizontal.size(); ++i) {
-			int self = horizontal[i].rect;
-			float bestDist = 0, dist;
-			int best = -1;
-			for (int o = i + 1; o < horizontal.size(); ++o) {
-				// TODO make this a function?
-				int other = horizontal[o].rect;
-				dist = goingThisWay[dir](self, other);
-				if (dist > 0 && (best < 0 || dist < bestDist)) {
-					bestDist = dist;
-					best = other;
-					if (o < horizontal.size() - 1) {
-						int next = horizontal[o + 1].rect;
-						if (rects[next]->y != rects[other]->y) {
-							break;
-						}
-					}
-				}
-			}
-			if (best >= 0) {
-				rects[self]->SetNavigation((Rect::Dir)dir, rects[best]);
-			}
-		}
-		// go left
-		dir = (int)Rect::Dir::Left;
-		for (int i = (int)horizontal.size() - 1; i >= 0; --i) {
-			int self = horizontal[i].rect;
-			for (int o = i - 1; o >= 0; --o) {
-				int other = horizontal[o].rect;
-				if (goingThisWay[dir](self, other)) {
-					rects[self]->SetNavigation((Rect::Dir)dir, rects[other]);
-					break;
-				}
-			}
-		}
-		// go down
-		dir = (int)Rect::Dir::Down;
-		for (int i = 0; i < (int)vertical.size(); ++i) {
-			int self = vertical[i].rect;
-			for (int o = i + 1; o < vertical.size(); ++o) {
-				int other = vertical[o].rect;
-				if (goingThisWay[dir](self, other)) {
-					rects[self]->SetNavigation((Rect::Dir)dir, rects[other]);
-					break;
-				}
-			}
-		}
-		// go up
-		dir = (int)Rect::Dir::Up;
-		for (int i = (int)vertical.size() - 1; i >= 0; --i) {
-			int self = vertical[i].rect;
-			for (int o = i - 1; o >= 0; --o) {
-				int other = vertical[o].rect;
-				if (goingThisWay[dir](self, other)) {
-					rects[self]->SetNavigation((Rect::Dir)dir, rects[other]);
-					break;
+
+		for (int dir = 0; dir < (int)Rect::Dir::Count; ++dir) {
+			for (int selfId = 0; selfId < centers.size(); ++selfId) {
+				int bestCandidate = GetBestNavigationCandidate(centers, selfId, CandidateVetting[dir]);
+				if (bestCandidate >= 0) {
+					rects[selfId]->SetNavigation((Rect::Dir)dir, rects[bestCandidate]);
 				}
 			}
 		}
 	}
+
+	static int GetBestNavigationCandidate(const std::vector<Coord>& centers, int selfId, std::function<bool(Coord delta)> initialCandidateVettingFunction) {
+		Coord selfCenter = centers[selfId];
+		int bestCandidate = -1;
+		float bestCandidateDistance = 0;
+		float distance;
+		for (int candidateId = 0; candidateId < centers.size(); ++candidateId) {
+			if (selfId == candidateId) {
+				continue;
+			}
+			Coord delta = centers[candidateId]  - selfCenter;
+			if (initialCandidateVettingFunction(delta)) {
+				distance = delta.MagnitudeSq();
+				if (bestCandidateDistance == 0 || distance < bestCandidateDistance) {
+					bestCandidateDistance = distance;
+					bestCandidate = candidateId;
+				}
+			}
+		}
+		return bestCandidate;
+	}
+
+	void DrawNavigation(SDL_Renderer* g) {
+		Coord center = GetCenter();
+		Coord other;
+		for (int i = 0; i < (int)Rect::Dir::Count; ++i) {
+			SelectableRect* next = _next[i];
+			if (next == NULL) {
+				continue;
+			}
+			other = next->GetCenter();
+			Coord delta = other - center;
+			other = center + delta / 2;
+			int c = 0xff000000 | Rect::DirColor[i];
+			SDL_SetRenderDrawColor(g, c);
+			SDL_RenderDrawLine(g, center.x, center.y, other.x, other.y);
+		}
+	}
+
 };

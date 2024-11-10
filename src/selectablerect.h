@@ -6,8 +6,6 @@
 #include <algorithm>
 
 class SelectableRect : public Rect {
-public:
-
 protected:
 	bool _selected;
 	SelectableRect* _next[4];

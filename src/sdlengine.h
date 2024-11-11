@@ -10,6 +10,7 @@
 #include "coord.h"
 #include "rect.h"
 #include "sdlhelper.h"
+#include "sdleventprocessor.h"
 
 class SdlEngine
 {
@@ -53,6 +54,15 @@ private:
 	std::vector<SDL_Surface*> _managedSurfaces;
 	std::vector<size_t> _managedTextures;
 	std::map<std::string, TTF_Font*> _fonts;
+	std::vector<SdlEventProcessor*> _eventProcessors;
+	std::vector<SdlDrawable*> _drawables;
+	std::vector<SdlUpdatable*> _updatable;
+	struct DelegateNextFrame {
+		std::string src;
+		TriggeredEvent action;
+	};
+	std::vector<DelegateNextFrame>* _todo;
+	std::vector<DelegateNextFrame>* _todoNow;
 public:
 	std::string ErrorMessage;
 	Coord MousePosition;
@@ -70,6 +80,7 @@ public:
 	void ClearGraphics();
 	void Render();
 	void ProcessInput();
+	void Update();
 	SdlEngine::ErrorCode IsPressed(int sdlk, bool& out_pressed);
 	SdlEngine::ErrorCode LoadSdlSurfaceBasic(std::string path, SDL_Surface*& out_surface);
 	SdlEngine::ErrorCode LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface);
@@ -95,10 +106,19 @@ public:
 	void UnregisterMouseUp(int button, size_t owner);
 	void UnregisterKeyDown(int button, size_t owner);
 	void UnregisterKeyUp(int button, size_t owner);
+	void RegisterProcessor(SdlEventProcessor* eventProcessor);
+	void UnregisterProcessor(SdlEventProcessor* eventProcessor);
+	void RegisterDrawable(SdlDrawable* drawable);
+	void UnregisterDrawable(SdlDrawable* drawable);
+	void RegisterUpdatable(SdlUpdatable* updatable);
+	void UnregisterUpdatable(SdlUpdatable* updatable);
 	void ProcessEvent(const SDL_Event& e);
+	void ServiceQueue();
+	void Queue(TriggeredEvent action, std::string src);
 	static void ProcessDelegates(SdlEngine::EventDelegateListMap& delegates, int id, const SDL_Event& e);
 	static void ProcessDelegates(SdlEngine::EventDelegateKeyedList& delegates, const SDL_Event& e);
 	static void ProcessDelegates(SdlEngine::EventKeyedList& delegates);
+	static void ProcessDelegates(std::vector<SdlEventProcessor*> eventProcessors, const SDL_Event& e);
 private:
 	SdlEngine::ErrorCode InitSDL_Surface();
 	SdlEngine::ErrorCode InitSDL_Renderer();

@@ -16,13 +16,13 @@ public:
 	int GetX() const { return x; }
 	int GetY() const { return y; }
 
-	static Coord Zero;// = new Coord(0, 0);
-	static Coord One;// = new Coord(1, 1);
-	static Coord Two;// = new Coord(2, 2);
-	static Coord Up;// = new Coord(0, -1);
-	static Coord Left;// = new Coord(-1, 0);
-	static Coord Down;// = new Coord(0, 1);
-	static Coord Right;// = new Coord(1, 0);
+	static const Coord Zero;
+	static const Coord One;
+	static const Coord Two;
+	static const Coord Up;
+	static const Coord Left;
+	static const Coord Down;
+	static const Coord Right;
 
 	std::string ToString() const { return string_format("%f,%f", x, y); }
 	int GetHashCode() const { return y * 0x00010000 + x; }

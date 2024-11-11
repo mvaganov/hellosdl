@@ -1,15 +1,25 @@
 #pragma once
 
-#include "sdlengine.h"
-#include "sdlhelper.h"
-#include <functional>
+#include <SDL.h>
+#include <string>
 
 class SdlEventProcessor {
 public:
-	SdlEngine::EventDelegateKeyedList ownedEvents;
+	virtual void ProcessInput(const SDL_Event& e) = 0;
+};
 
-private:
-
+class SdlDrawable {
 public:
+	virtual void Draw(SDL_Renderer* g) = 0;
+};
 
+class SdlUpdatable {
+public:
+	virtual void Update() = 0;
+};
+
+class SdlNamed {
+public:
+	virtual std::string GetName() = 0;
+	virtual void SetName(std::string name) = 0;
 };

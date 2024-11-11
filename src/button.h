@@ -5,7 +5,7 @@
 #include "selectablerect.h"
 #include <functional>
 
-class Button : public SelectableRect {
+class Button : public SelectableRect, public SdlDrawable, public SdlUpdatable, public SdlNamed {
 public:
 	enum class State { Normal, Hovered, Clicked, Selected, HoveredSelected };
 	class Colors {
@@ -23,20 +23,23 @@ public:
 	SdlEngine::TriggeredEvent onPress;
 	SdlEngine::TriggeredEvent onRelease;
 private:
+	std::string _name;
 	Button::State _buttonState;
 	int color;
 	bool held;
 public:
 	Colors Colors;
 
-	Button(SdlEngine* engine) : Button({ 0, 0, 10, 10 }, engine) {}
+	Button() : Button({ 0, 0, 10, 10 }) {}
 
-	Button(SDL_Rect rect, SdlEngine* engine) : SelectableRect(rect), _buttonState(State::Normal), Colors(),
-	held(false), color(0) {
+	Button(SDL_Rect rect) : SelectableRect(rect), _buttonState(State::Normal), Colors(), held(false), color(0) {
 		onPress = Nothing;
 		onRelease = Nothing;
+		SdlEngine* engine = SdlEngine::GetInstance();
 		engine->RegisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandlePress(e); });
 		engine->RegisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandlePress(e); });
+		engine->RegisterDrawable(this);
+		engine->RegisterUpdatable(this);
 	}
 
 	~Button() {
@@ -77,7 +80,11 @@ public:
 		}
 	}
 
-	void Draw(SDL_Renderer* g) {
+	virtual void Draw(SDL_Renderer* g) {
+		if (!_active) {
+			// TODO when deactivated, remove it from the list instead.
+			return;
+		}
 		long oldColor;
 		SDL_GetRenderDrawColor(g, &oldColor);
 		UpdateColor();
@@ -88,7 +95,12 @@ public:
 		SDL_SetRenderDrawColor(g, oldColor);
 	}
 
-	void Update(SdlEngine* engine) {
+	virtual void Update() {
+		if (!_active) {
+			// TODO when deactivated, remove it from the list instead.
+			return;
+		}
+		SdlEngine* engine = SdlEngine::GetInstance();
 		bool mouseOver = IsContains(engine->MousePosition);
 		//printf("%d, %d,     %d %d\n", engine->MousePosition.x, engine->MousePosition.y, mouseOver, isPressed);
 		if (mouseOver) {
@@ -110,4 +122,7 @@ public:
 		}
 		UpdateColor();
 	}
+
+	virtual std::string GetName() { return _name; }
+	virtual void SetName(std::string name) { _name = name; }
 };

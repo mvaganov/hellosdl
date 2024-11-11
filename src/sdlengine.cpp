@@ -21,7 +21,7 @@ void SdlEngine::FailFast() {
 SdlEngine::SdlEngine(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
 _rendererKind(Renderer::None), _running(false), _initialized(false), _currentFont(NULL),
 _isPressedKeyMask(), _isMousePressed(), _isPressedKeyMaskScancode(),
-_managedSurfaces(), _fonts() {
+_managedSurfaces(), _fonts(), _eventProcessors(), _todo(NULL), _todoNow(NULL) {
 	ErrorMessage = "";
 	if (_instance == NULL) {
 		_instance = this;
@@ -31,6 +31,8 @@ _managedSurfaces(), _fonts() {
 	CLEAR_ARRAY(_isPressedKeyMask);
 	CLEAR_ARRAY(_isPressedKeyMaskScancode);
 	CLEAR_ARRAY(_isMousePressed);
+	_todo = new std::vector<DelegateNextFrame>();
+	_todoNow = new std::vector<DelegateNextFrame>();
 }
 
 SdlEngine::~SdlEngine() {
@@ -174,6 +176,10 @@ void SdlEngine::ClearGraphics() {
 }
 
 void SdlEngine::Render() {
+	SDL_Renderer* g = GetRenderer();
+	for (int b = 0; b < _drawables.size(); ++b) {
+		_drawables[b]->Draw(g);
+	}
 	switch (_rendererKind) {
 	case Renderer::SDL_Surface:
 		SDL_UpdateWindowSurface(_window);
@@ -181,6 +187,12 @@ void SdlEngine::Render() {
 	case Renderer::SDL_Renderer:
 		SDL_RenderPresent(_renderer);
 		break;
+	}
+}
+
+void SdlEngine::ProcessDelegates(std::vector<SdlEventProcessor*> eventProcessors, const SDL_Event& e) {
+	for (int i = 0; i < eventProcessors.size(); ++i) {
+		eventProcessors[i]->ProcessInput(e);
 	}
 }
 
@@ -201,6 +213,36 @@ void SdlEngine::ProcessDelegates(SdlEngine::EventKeyedList& delegates){
 	for (auto it = delegates.begin(); it != delegates.end(); it++) {
 		it->second();
 	}
+}
+
+void SdlEngine::RegisterProcessor(SdlEventProcessor* eventProcessor) {
+	_eventProcessors.push_back(eventProcessor);
+}
+
+void SdlEngine::UnregisterProcessor(SdlEventProcessor* eventProcessor) {
+	auto found = std::find(_eventProcessors.begin(), _eventProcessors.end(), eventProcessor);
+	if (found == _eventProcessors.end()) { return; }
+	_eventProcessors.erase(found);
+}
+
+void SdlEngine::RegisterDrawable(SdlDrawable* drawable) {
+	_drawables.push_back(drawable);
+}
+
+void SdlEngine::UnregisterDrawable(SdlDrawable* drawable) {
+	auto found = std::find(_drawables.begin(), _drawables.end(), drawable);
+	if (found == _drawables.end()) { return; }
+	_drawables.erase(found);
+}
+
+void SdlEngine::RegisterUpdatable(SdlUpdatable* updatable) {
+	_updatable.push_back(updatable);
+}
+
+void SdlEngine::UnregisterUpdatable(SdlUpdatable* updatable) {
+	auto found = std::find(_updatable.begin(), _updatable.end(), updatable);
+	if (found == _updatable.end()) { return; }
+	_updatable.erase(found);
 }
 
 void SdlEngine::ProcessEvent(const SDL_Event& e)
@@ -242,15 +284,39 @@ void SdlEngine::ProcessEvent(const SDL_Event& e)
 		//	e.button.x, e.button.y, e.button.type, e.button.clicks, e.button.which, e.button.state, e.button.button);
 		break;
 	}
+	ProcessDelegates(this->_eventProcessors, e);
 }
 
+void SdlEngine::ServiceQueue() {
+	auto temp = _todoNow;
+	_todoNow = _todo;
+	_todo = temp;
+	_todo->clear();
+	for (int i = 0; i < _todoNow->size(); ++i) {
+		//printf("%s\n", (*_todoNow)[i].src.c_str());
+		(*_todoNow)[i].action();
+	}
+	_todoNow->clear();
+}
+
+void SdlEngine::Queue(SdlEngine::TriggeredEvent action, std::string src) {
+	_todo->push_back({ src, action });
+}
+
+
 void SdlEngine::ProcessInput() {
-	//Hack to get _window to stay up
 	SDL_Event e;
 	std::map<int, EventDelegateKeyedList>::iterator found;
 	while (SDL_PollEvent(&e)) {
 		ProcessEvent(e);
 	}
+}
+
+void SdlEngine::Update() {
+	for (int b = 0; b < _updatable.size(); ++b) {
+		_updatable[b]->Update();
+	}
+	ServiceQueue();
 }
 
 SdlEngine::ErrorCode SdlEngine::InitSDL_Surface() {

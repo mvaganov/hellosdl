@@ -20,32 +20,27 @@ int main( int argc, char* args[] )
 	});
 	SdlEngine::ErrorCode err = sdl.Init("sdl", SdlEngine::Renderer::SDL_Renderer);
 	sdl.FailFast();
-	//SDL_Surface* img; sdl.LoadSdlSurface("img/helloworld.bmp", img);
 	SDL_Texture* tex;
 	SDL_Texture* word;
 	sdl.LoadSdlTexture("img/helloworld.png", tex);
 	sdl.FailFast();
-	//SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 	SDL_Renderer* g = sdl.GetRenderer();
 	Rect fillRect(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-	//Button button({ 10, 20, 30, 40 }, &sdl);
-	//button.onPress = []() { printf("pressed!\n"); };
-	//button.onRelease = []() { printf("released!\n"); };
 	SDL_SetRenderDrawColor(g, 0xFF008800);
 	sdl.SetFont("arial", 24);
 	SdlEngine::ErrorCode wordErr = sdl.CreateText("these are words!", word);
 
 	Button buttons[] = {
-		Button({ 10, 20, 30, 40 }, &sdl),
-		Button({ 100, 20, 30, 40 }, &sdl),
-		Button({ 50, 30, 30, 40 }, &sdl),
-		Button({ 20, 200, 30, 40 }, &sdl),
-		Button({ 300, 300, 30, 40 }, &sdl),
-		Button({ 0, 0, 30, 40 }, &sdl),
-		Button({ 10, 150, 30, 40 }, &sdl),
-		Button({ 50, 150, 30, 40 }, &sdl),
-		Button({ 90, 150, 30, 40 }, &sdl),
-		Button({ 130, 150, 30, 40 }, &sdl),
+		Button({ 10, 20, 30, 40 }),
+		Button({ 100, 20, 30, 40 }),
+		Button({ 50, 30, 30, 40 }),
+		Button({ 20, 200, 30, 40 }),
+		Button({ 300, 300, 30, 40 }),
+		Button({ 0, 0, 30, 40 }),
+		Button({ 10, 150, 30, 40 }),
+		Button({ 50, 150, 30, 40 }),
+		Button({ 90, 150, 30, 40 }),
+		Button({ 130, 150, 30, 40 }),
 	};
 	const int buttonsCount = sizeof(buttons) / sizeof(buttons[0]);
 	std::vector<SelectableRect*> buttonRefs;
@@ -64,12 +59,6 @@ int main( int argc, char* args[] )
 	while (sdl.IsRunning()) {
 		TimePoint t0 = Clock::now();
 		sdl.ClearGraphics();
-		//SDL_Rect stretchRect;
-		//stretchRect.x = 0;
-		//stretchRect.y = 0;
-		//stretchRect.w = SCREEN_WIDTH/8;
-		//stretchRect.h = SCREEN_HEIGHT;
-		//SDL_BlitScaled(img, NULL, sdl.GetScreenSurface(), &stretchRect);
 		SDL_RenderCopy(g, tex, NULL, NULL);
 		long color = fillRect.IsContains(sdl.MousePosition) ? 0x880000FF : 0xFF0000FF;
 		SDL_SetRenderDrawColor(g, color);
@@ -79,15 +68,13 @@ int main( int argc, char* args[] )
 		SDL_SetRenderDrawColor(g, 0x8800FF00);
 		SDL_FillCircle(g, 200, 50, 50);
 		SDL_DrawCircle(g, 200, 50, 52);
-		for (int b = 0; b < buttonsCount; ++b) {
-			buttons[b].Draw(g);
-		}
 		SDL_RenderCopy(g, word, NULL, &wordArea);
 		sdl.Render();
+		sdl.FailFast();
 		sdl.ProcessInput();
-		for (int b = 0; b < buttonsCount; ++b) {
-			buttons[b].Update(&sdl);
-		}
+		sdl.FailFast();
+		sdl.Update();
+		sdl.FailFast();
 		TimePoint t1 = Clock::now();
 		HiResDuration time_span = std::chrono::duration_cast<HiResDuration>(t1 - t0);
 		double secondsDuration = time_span.count();

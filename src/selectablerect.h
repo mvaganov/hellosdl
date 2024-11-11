@@ -2,14 +2,19 @@
 #include "rect.h"
 #include "sdlengine.h"
 #include "sdlhelper.h"
+#include "sdleventprocessor.h"
 #include <functional>
 #include <algorithm>
 
 // TODO register self with SdlEngine, and mark as needing navigation recalculation
-// TODO navigatable flag, which allows this to be skipped for navigation calculations
-class SelectableRect : public Rect {
+class SelectableRect : public Rect, public SdlEventProcessor {
 protected:
 	bool _selected;
+	/// <summary>
+	/// if false, don't navigate to this element
+	/// </summary>
+	bool _navigatable;
+	bool _active;
 	SelectableRect* _next[(int)Rect::Dir::Count];
 public:
 	SdlEngine::EventDelegateKeyedList OnKeyEvent;
@@ -35,12 +40,13 @@ public:
 		_selected = selected;
 	}
 
-	SelectableRect(SDL_Rect rect) : Rect(rect), _selected(false), _next() {
+	SelectableRect(SDL_Rect rect) : Rect(rect), _selected(false), _navigatable(true), _active(true), _next() {
 		memset(_next, NULL, sizeof(_next));
 		OnKeyEvent[(size_t)this] = [this](SDL_Event e) { HandleNavigationKey(e); };
+		SdlEngine::GetInstance()->RegisterProcessor(this);
 	}
 
-	void ProcessInput(const SDL_Event& e) {
+	virtual void ProcessInput(const SDL_Event& e) {
 		switch (e.type) {
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
@@ -58,25 +64,28 @@ public:
 	}
 
 	void HandleNavigationKey(SDL_Event keyPress) {
-		if (keyPress.type != SDL_KEYDOWN) {
+		if (!_active || !_selected || keyPress.type != SDL_KEYDOWN) {
 			return;
 		}
+		//printf("SelectableRect::HandleNavigationKey\n");
 		switch (keyPress.key.keysym.sym) {
-		case SDLK_UP: Navigate(Rect::Dir::Up); break;
+		case SDLK_UP:   Navigate(Rect::Dir::Up);   break;
 		case SDLK_LEFT: Navigate(Rect::Dir::Left); break;
 		case SDLK_DOWN: Navigate(Rect::Dir::Down); break;
-		case SDLK_RIGHT: Navigate(Rect::Dir::Right); break;
+		case SDLK_RIGHT:Navigate(Rect::Dir::Right);break;
 		}
 	}
 
 	void Navigate(Rect::Dir dir) {
-		printf("navigate %d\n", dir);
+		//printf("navigate %d\n", dir);
 		SelectableRect* next = _next[(int)dir];
 		if (next == NULL) {
 			return;
 		}
-		SetSelected(false);
-		next->SetSelected(true);
+		SdlEngine::GetInstance()->Queue([this,next]() {
+			this->SetSelected(false);
+			next->SetSelected(true);
+		}, string_format(__FILE__ ":%d", __LINE__));
 	}
 
 	void SetNavigation(Rect::Dir dir, SelectableRect* nextRect) {
@@ -104,27 +113,15 @@ public:
 		}
 
 		std::function<bool(Coord delta)> CandidateVetting[(int)Rect::Dir::Count] = {
-			// up
-			[](Coord delta) -> bool {
-				return delta.y < 0 && abs(delta.x) <= abs(delta.y);
-			},
-			// left
-			[](Coord delta) -> bool {
-				return delta.x < 0 && abs(delta.x) >= abs(delta.y);
-			},
-			// down
-			[](Coord delta) -> bool {
-				return delta.y > 0 && abs(delta.x) <= abs(delta.y);
-			},
-			// right
-			[](Coord delta) -> bool {
-				return delta.x > 0 && abs(delta.x) >= abs(delta.y);
-			},
+			[](Coord delta) -> bool { return delta.y < 0 && abs(delta.x) <= abs(delta.y); }, // up
+			[](Coord delta) -> bool { return delta.x < 0 && abs(delta.x) >= abs(delta.y); }, // left
+			[](Coord delta) -> bool { return delta.y > 0 && abs(delta.x) <= abs(delta.y); }, // down
+			[](Coord delta) -> bool { return delta.x > 0 && abs(delta.x) >= abs(delta.y); }, // right
 		};
 
 		for (int dir = 0; dir < (int)Rect::Dir::Count; ++dir) {
 			for (int selfId = 0; selfId < centers.size(); ++selfId) {
-				int bestCandidate = GetBestNavigationCandidate(centers, selfId, CandidateVetting[dir]);
+				int bestCandidate = GetBestNavigationCandidate(rects, centers, selfId, CandidateVetting[dir]);
 				if (bestCandidate >= 0) {
 					rects[selfId]->SetNavigation((Rect::Dir)dir, rects[bestCandidate]);
 				}
@@ -132,13 +129,13 @@ public:
 		}
 	}
 
-	static int GetBestNavigationCandidate(const std::vector<Coord>& centers, int selfId, std::function<bool(Coord delta)> initialCandidateVettingFunction) {
+	static int GetBestNavigationCandidate(const std::vector<SelectableRect*>& rects, const std::vector<Coord>& centers, int selfId, std::function<bool(Coord delta)> initialCandidateVettingFunction) {
 		Coord selfCenter = centers[selfId];
 		int bestCandidate = -1;
 		float bestCandidateDistance = 0;
 		float distance;
 		for (int candidateId = 0; candidateId < centers.size(); ++candidateId) {
-			if (selfId == candidateId) {
+			if (selfId == candidateId || !rects[candidateId]->_navigatable) {
 				continue;
 			}
 			Coord delta = centers[candidateId]  - selfCenter;

@@ -8,6 +8,7 @@ public:
 	static int DirColor[];
 
 	Rect(const Coord& min, const Coord& size) : Rect(min.x, min.y, size.x, size.y) { }
+	Rect() : Rect(0, 0, 0, 0) {}
 	Rect(const Rect& o) : Rect(o.x, o.y, o.w, o.h) {}
 	Rect(int x, int y, int width, int height) {
 		this->x = x; this->y = y; this->w = width; this->h = height;
@@ -52,6 +53,9 @@ public:
 
 	Coord& Min() { return *((Coord*)&x); }
 	Coord& Size() { return *((Coord*)&w); }
+
+	void SetSize(int w, int h) { this->w = w; this->h = h; }
+	void SetSize(Coord size) { SetSize(size.x, size.y); }
 
 	bool IsContains(const Coord& coord) {
 		return coord.x >= x && coord.y >= y && coord.x < x + w && coord.y < y + h;

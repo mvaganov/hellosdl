@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <chrono>
 #include "button.h"
+#include "sdltext.h"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -55,6 +56,8 @@ int main( int argc, char* args[] )
 	Rect wordArea(buttons[0].GetPosition(), sdl.GetTextureSize(word));
 
 	SelectableRect::SetupNavigation(buttonRefs);
+
+	SdlText textTest("testing");
 
 	while (sdl.IsRunning()) {
 		TimePoint t0 = Clock::now();

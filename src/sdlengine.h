@@ -36,6 +36,9 @@ public:
 	static SdlEngine* GetInstance() { return _instance; }
 private:
 	TTF_Font* _currentFont;
+	std::string _currentFontId;
+	std::string _currentFontName;
+	int _currentFontSize;
 	static SdlEngine* _instance;
 	SDL_Window* _window = NULL;
 	SDL_Surface* _screenSurface = NULL;
@@ -76,6 +79,9 @@ public:
 	SDL_Surface* GetScreenSurface();
 	SDL_Renderer* GetRenderer();
 	TTF_Font* GetFont();
+	std::string GetFontName();
+	std::string GetFontId();
+	int GetFontSize();
 	SdlEngine::ErrorCode SetFont(std::string fontName, int size);
 	void ClearGraphics();
 	void Render();

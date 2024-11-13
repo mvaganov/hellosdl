@@ -146,6 +146,12 @@ SDL_Renderer* SdlEngine::GetRenderer() { return this->_renderer; }
 
 TTF_Font* SdlEngine::GetFont() { return this->_currentFont; }
 
+std::string SdlEngine::GetFontName() { return this->_currentFontName; }
+
+std::string SdlEngine::GetFontId() { return this->_currentFontId; }
+
+int SdlEngine::GetFontSize() { return this->_currentFontSize; }
+
 SdlEngine::ErrorCode SdlEngine::SetFont(std::string fontName, int size) {
 	std::string savedName = string_format("%s%d", fontName.c_str(), size);
 	auto iter = _fonts.find(savedName);
@@ -161,6 +167,10 @@ SdlEngine::ErrorCode SdlEngine::SetFont(std::string fontName, int size) {
 	} else {
 		_currentFont = iter->second;
 	}
+	_currentFontId = savedName;
+	_currentFontName = fontName;
+	_currentFontSize = size;
+	printf("current font: %s\n", _currentFontId.c_str());
 	return SdlEngine::ErrorCode::Success;
 }
 

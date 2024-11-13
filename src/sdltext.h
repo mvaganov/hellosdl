@@ -13,8 +13,20 @@ public:
 	Rect _srcRect;
 	Rect _destRect;
 
-	SdlText(std::string text) : _text(), SdlTexture(NULL), _srcRect(), _destRect() {
-		SetText(text);
+	SdlText(std::string text) : SdlText(text, "", -1) { }
+
+	SdlText(std::string text, std::string font, int size) : _text(), SdlTexture(NULL), _srcRect(), _destRect() {
+		SetText(text, font, size);
+		SdlEngine::GetInstance()->RegisterDrawable(this);
+	}
+
+	~SdlText() {
+		SdlEngine* engine = SdlEngine::GetInstance();
+		if (SdlTexture != NULL) {
+			engine->ReleaseSdlTexture(SdlTexture);
+			SdlTexture = NULL;
+		}
+		SdlEngine::GetInstance()->UnregisterDrawable(this);
 	}
 
 	const std::string& GetText() const { return _text; }
@@ -22,8 +34,15 @@ public:
 	Rect& DestRect() { return _destRect; }
 	Rect& SrcRect() { return _srcRect; }
 
-	void SetText(std::string text) {
+	void SetText(std::string text, std::string font, int fontSize) {
 		SdlEngine* engine = SdlEngine::GetInstance();
+		bool setFont = font != "";
+		bool setSize = fontSize > 0;
+		if ((setFont && font != engine->GetFontName())
+		|| (setSize && fontSize != engine->GetFontSize())) {
+			if (!setFont) { font = engine->GetFontName(); }
+			if (!setSize) { fontSize = engine->GetFontSize(); }
+		}
 		if (SdlTexture != NULL) {
 			engine->ReleaseSdlTexture(SdlTexture);
 		}
@@ -38,14 +57,6 @@ public:
 		Coord size = engine->GetTextureSize(SdlTexture);
 		_destRect.SetSize(size);
 		_srcRect.SetSize(size);
-	}
-
-	~SdlText() {
-		SdlEngine* engine = SdlEngine::GetInstance();
-		if (SdlTexture != NULL) {
-			engine->ReleaseSdlTexture(SdlTexture);
-			SdlTexture = NULL;
-		}
 	}
 
 	virtual void Draw(SDL_Renderer* g) {

@@ -169,3 +169,8 @@ public:
 		SDL_RenderDrawRect(g, (SDL_Rect*)this);
 	}
 };
+
+class HasRect {
+public:
+	virtual Rect* GetRect() = 0;
+};

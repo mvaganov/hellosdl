@@ -31,16 +31,15 @@ _managedSurfaces(), _fonts(), _eventProcessors(), _todo(NULL), _todoNow(NULL) {
 	CLEAR_ARRAY(_isPressedKeyMask);
 	CLEAR_ARRAY(_isPressedKeyMaskScancode);
 	CLEAR_ARRAY(_isMousePressed);
-	_todo = new std::vector<DelegateNextFrame>();
-	_todoNow = new std::vector<DelegateNextFrame>();
+	_todo = DelegateListPtr(new std::vector<DelegateNextFrame>());
+	_todoNow = DelegateListPtr(new std::vector<DelegateNextFrame>());
 }
 
 SdlEngine::~SdlEngine() {
 	Release();
 }
 
-SdlEngine::ErrorCode SdlEngine::Release()
-{
+SdlEngine::ErrorCode SdlEngine::Release() {
 	for (int i = 0; i < _managedSurfaces.size(); ++i) {
 		SDL_Surface* loadedSurface = _managedSurfaces[i];
 		if (loadedSurface == NULL) {

@@ -60,12 +60,15 @@ private:
 	std::vector<SdlEventProcessor*> _eventProcessors;
 	std::vector<SdlDrawable*> _drawables;
 	std::vector<SdlUpdatable*> _updatable;
-	struct DelegateNextFrame {
+	class DelegateNextFrame {
+	public:
 		std::string src;
 		TriggeredEvent action;
 	};
-	std::vector<DelegateNextFrame>* _todo;
-	std::vector<DelegateNextFrame>* _todoNow;
+	typedef std::vector<DelegateNextFrame> DelegateList;
+	typedef std::shared_ptr<std::vector<DelegateNextFrame>> DelegateListPtr;
+	DelegateListPtr _todo;
+	DelegateListPtr _todoNow;
 public:
 	std::string ErrorMessage;
 	Coord MousePosition;

@@ -4,9 +4,8 @@
 #include <cctype>
 #include <SDL_image.h>
 #include <algorithm>
+#include "helper.h"
 
-/// Reimplements C#'s nameof operator
-#define nameof(thing)	#thing
 #define CLEAR_ARRAY(arr) memset(arr, 0, sizeof(arr))
 
 SdlEngine * SdlEngine::_instance = NULL;
@@ -21,7 +20,7 @@ void SdlEngine::FailFast() {
 SdlEngine::SdlEngine(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
 _rendererKind(Renderer::None), _running(false), _initialized(false), _currentFont(NULL),
 _isPressedKeyMask(), _isMousePressed(), _isPressedKeyMaskScancode(),
-_managedSurfaces(), _fonts(), _eventProcessors(), _todo(NULL), _todoNow(NULL) {
+_managedSurfaces(), _fonts(), _eventProcessors(), _todo(NULL), _todoNow(NULL), _currentFontSize(0) {
 	ErrorMessage = "";
 	if (_instance == NULL) {
 		_instance = this;
@@ -581,5 +580,4 @@ void SdlEngine::UnregisterKeyUp(int button, size_t owner) {
 	RemoveDelegateFromList(_keyBindUp, button, owner);
 }
 
-#undef nameof
 #undef CLEAR_ARRAY

@@ -3,6 +3,7 @@
 #include <chrono>
 #include "button.h"
 #include "sdltext.h"
+#include "sdlgameobject.h"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -11,6 +12,14 @@ typedef std::chrono::high_resolution_clock Clock;
 typedef Clock::time_point TimePoint;
 typedef std::chrono::duration<double> HiResDuration;
 
+// TODO use this!
+std::shared_ptr<SdlGameObject> CreateButton(std::string buttonName, std::string text, Rect size) {
+	std::shared_ptr<SdlGameObject> buttonObject(new SdlGameObject(buttonName));
+	std::shared_ptr<SdlText> textComponent(new SdlText(text));
+	// TODO find out why this causes memory problems.
+	//buttonObject.get()->AddComponent(textComponent);
+	return buttonObject;
+}
 
 int main( int argc, char* args[] )
 {	SdlEngine sdl(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -30,6 +39,8 @@ int main( int argc, char* args[] )
 	SDL_SetRenderDrawColor(g, 0xFF008800);
 	sdl.SetFont("arial", 24);
 	SdlEngine::ErrorCode wordErr = sdl.CreateText("these are words!", word);
+
+	std::shared_ptr<SdlGameObject> btn = CreateButton("btn", "HELLO!.........", { 500, 50, 100, 20 });
 
 	Button buttons[] = {
 		Button({ 10, 20, 30, 40 }),

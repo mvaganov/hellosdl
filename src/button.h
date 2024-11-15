@@ -4,8 +4,9 @@
 #include "sdlhelper.h"
 #include "selectablerect.h"
 #include <functional>
+#include "helper.h"
 
-class Button : public SelectableRect, public SdlDrawable, public SdlUpdatable, public SdlNamed {
+class Button : public SdlNamed, public SelectableRect, public SdlDrawable, public SdlUpdatable {
 public:
 	enum class State { Normal, Hovered, Clicked, Selected, HoveredSelected };
 	class Colors {
@@ -23,7 +24,6 @@ public:
 	SdlEngine::TriggeredEvent onPress;
 	SdlEngine::TriggeredEvent onRelease;
 private:
-	std::string _name;
 	Button::State _buttonState;
 	int color;
 	bool held;
@@ -123,6 +123,9 @@ public:
 		UpdateColor();
 	}
 
-	virtual std::string GetName() { return _name; }
-	virtual void SetName(std::string name) { _name = name; }
+	// TODO rename to something... like ConstantName.. or something. I dunno. I am sleepy.
+	const std::string _NAME = std::string(nameof(SdlButton));
+
+	virtual const std::string& GetName() const { return _NAME; }
+	virtual void SetName(std::string name) {  }
 };

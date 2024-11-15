@@ -65,5 +65,17 @@
     <ClInclude Include="src\sdlgameobject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\sdlobject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\componentcontainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sdlhierarchied.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

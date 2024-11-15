@@ -141,11 +141,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\button.h" />
+    <ClInclude Include="src\componentcontainer.h" />
     <ClInclude Include="src\coord.h" />
+    <ClInclude Include="src\helper.h" />
     <ClInclude Include="src\rect.h" />
     <ClInclude Include="src\sdleventprocessor.h" />
     <ClInclude Include="src\sdlgameobject.h" />
     <ClInclude Include="src\sdlhelper.h" />
+    <ClInclude Include="src\sdlhierarchied.h" />
+    <ClInclude Include="src\sdlobject.h" />
     <ClInclude Include="src\sdltext.h" />
     <ClInclude Include="src\selectablerect.h" />
     <ClInclude Include="src\stringstuff.h" />

@@ -13,55 +13,68 @@ public:
 	virtual int GetDrawCount() const = 0;
 };
 
-template<typename Type>
-class ComponentContainer {
-private:
-	std::vector<std::shared_ptr<Type>> _list;
-public:
-	int GetComponentCount() const { return (int)_list.size(); }
-	std::shared_ptr<Type> Get(int index) { return _list[index]; }
-	void ForEach(std::function<void(std::shared_ptr<Type>)> action) {
-		const int size = (int)_list.size();
-		for (int i = 0; i < size; ++i) {
-			action(_list[i]);
-		}
-	}
-	bool Add(std::shared_ptr<SdlNamed> sharedPtr) {
-		Type* item = dynamic_cast<Type*>(sharedPtr.get());
-		if (item) {
-			_list.push_back(std::shared_ptr<Type>(item));
-			return true;
-		}
-		return false;
-	}
-	void Clear() { _list.clear(); }
-	// TODO remove, get(index), get(type), getAll(type)
-};
+//template<typename Type>
+//class ComponentContainer {
+//private:
+//	std::vector<std::weak_ptr<Type>> _list;
+//public:
+//	int GetComponentCount() const { return (int)_list.size(); }
+//	std::weak_ptr<Type> Get(int index) { return _list[index]; }
+//	void ForEach(std::function<void(std::weak_ptr<Type>)> action) {
+//		for (auto it = _list.begin(); it != _list.end(); it++) {
+//			action(*it);
+//		}
+//	}
+//	bool Add(std::weak_ptr<Type> ptr) {
+//#if _DEBUG
+//		for (auto it = _list.begin(); it != _list.end(); it++) {
+//			if (*it == ptr) {
+//				printf("duplicate component being added");
+//				return false;
+//			}
+//		}
+//#endif
+//		_list.push_back(std::weak_ptr<Type>(shared_ptr<Type>(item));
+//		return true;
+//	}
+//	void Clear() { _list.clear(); }
+//	// TODO remove, get(index), get(type), getAll(type)
+//};
 
 class SdlComponentContainer : public SdlComponentContainerInterface {
 private:
-	ComponentContainer<SdlUpdatable> _update;
-	ComponentContainer<SdlDrawable> _drawable;
+	//ComponentContainer<SdlUpdatable> _update;
+	//ComponentContainer<SdlDrawable> _drawable;
+	std::vector<SdlUpdatable*> _updatable;
+	std::vector<SdlDrawable*> _drawable;
+	std::vector<std::shared_ptr<SdlNamed>> _list;
 public:
 	SdlComponentContainer() {}
 	~SdlComponentContainer() {
-		_update.Clear();
-		_drawable.Clear();
+		_updatable.clear();
+		_drawable.clear();
 	}
 	void Update() {
-		_update.ForEach([](std::shared_ptr<SdlUpdatable> ptr) {
-			ptr.get()->Update();
-		});
+		for (auto i : _updatable) {
+			i->Update();
+		}
 	}
 	void Draw(SDL_Renderer* g) {
-		_drawable.ForEach([g](std::shared_ptr<SdlDrawable> ptr) {
-			ptr.get()->Draw(g);
-		});
+		for (auto i : _drawable) {
+			i->Draw(g);
+		}
 	}
 	void AddComponent(std::shared_ptr<SdlNamed> ptr) {
-		_update.Add(ptr);
-		_drawable.Add(ptr);
+		_list.push_back(ptr);
+		SdlUpdatable* updatable = dynamic_cast<SdlUpdatable*>(ptr.get());
+		if (updatable) {
+			_updatable.push_back(updatable);
+		}
+		SdlDrawable* drawable = dynamic_cast<SdlDrawable*>(ptr.get());
+		if (drawable) {
+			_drawable.push_back(drawable);
+		}
 	}
-	virtual int GetUpdateCount() const { return _update.GetComponentCount(); }
-	virtual int GetDrawCount() const { return _drawable.GetComponentCount(); }
+	virtual int GetUpdateCount() const { return (int)_updatable.size(); }
+	virtual int GetDrawCount() const { return (int)_drawable.size(); }
 };

@@ -54,6 +54,8 @@ public:
 	Coord& Min() { return *((Coord*)&x); }
 	Coord& Size() { return *((Coord*)&w); }
 
+	void SetPosition(int x, int y) { this->x = x; this->y = y; }
+	void SetPosition(Coord p) { SetPosition(p.x, p.y); }
 	void SetSize(int w, int h) { this->w = w; this->h = h; }
 	void SetSize(Coord size) { SetSize(size.x, size.y); }
 

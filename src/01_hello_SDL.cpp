@@ -16,8 +16,10 @@ typedef std::chrono::duration<double> HiResDuration;
 std::shared_ptr<SdlGameObject> CreateButton(std::string buttonName, std::string text, Rect size) {
 	std::shared_ptr<SdlGameObject> buttonObject(new SdlGameObject(buttonName));
 	std::shared_ptr<SdlText> textComponent(new SdlText(text));
-	// TODO find out why this causes memory problems.
-	//buttonObject.get()->AddComponent(textComponent);
+	std::shared_ptr<Button> buttonComponent(new Button(size));
+	textComponent.get()->DestRect().SetPosition(size.GetPosition());
+	buttonObject.get()->AddComponent(buttonComponent);
+	buttonObject.get()->AddComponent(textComponent);
 	return buttonObject;
 }
 

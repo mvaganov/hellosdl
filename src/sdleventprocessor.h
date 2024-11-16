@@ -23,3 +23,8 @@ public:
 	virtual const std::string& GetName() const = 0;
 	virtual void SetName(std::string name) = 0;
 };
+
+class SdlHandleEvent {
+public:
+	virtual void HandleEvent(const SDL_Event& e) = 0;
+};

@@ -6,7 +6,7 @@
 #include <functional>
 #include "helper.h"
 
-class Button : public SdlNamed, public SelectableRect, public SdlDrawable, public SdlUpdatable {
+class Button : public SdlNamed, public SelectableRect, public SdlDrawable, public SdlUpdatable, public SdlHandleEvent {
 public:
 	enum class State { Normal, Hovered, Clicked, Selected, HoveredSelected };
 	class Colors {
@@ -35,20 +35,30 @@ public:
 	Button(SDL_Rect rect) : SelectableRect(rect), _buttonState(State::Normal), Colors(), held(false), color(0) {
 		onPress = Nothing;
 		onRelease = Nothing;
-		SdlEngine* engine = SdlEngine::GetInstance();
-		engine->RegisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandlePress(e); });
-		engine->RegisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandlePress(e); });
-		engine->RegisterDrawable(this);
-		engine->RegisterUpdatable(this);
+		Register();
 	}
 
 	~Button() {
+		Unregister();
+	}
+
+	void Register() {
+		SdlEngine* sdl = SdlEngine::GetInstance();
+		sdl->RegisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandleEvent(e); });
+		sdl->RegisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandleEvent(e); });
+		sdl->RegisterDrawable(this);
+		sdl->RegisterUpdatable(this);
+	}
+
+	void Unregister() {
 		SdlEngine* sdl = SdlEngine::GetInstance();
 		sdl->UnregisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this);
 		sdl->UnregisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this);
+		sdl->UnregisterDrawable(this);
+		sdl->UnregisterUpdatable(this);
 	}
 
-	void HandlePress(SDL_Event e) {
+	virtual void HandleEvent(const SDL_Event& e) {
 		switch (e.button.state) {
 		case SDL_PRESSED: {
 			bool mouseOver = IsContains(SdlEngine::GetInstance()->MousePosition);

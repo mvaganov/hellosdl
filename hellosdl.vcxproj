@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\vclib\SDL2-2.30.8\include;D:\vclib\SDL2_image-2.8.2\include;D:\vclib\SDL2_ttf-2.22.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\vclib\SDL2-2.30.8\include;D:\vclib\SDL2_image-2.8.2\include;D:\vclib\SDL2_ttf-2.22.0\include;D:\Users\mvaga\Developer\libunifex\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\vclib\SDL2-2.30.8\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64\optional;D:\vclib\SDL2_ttf-2.22.0\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -108,6 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

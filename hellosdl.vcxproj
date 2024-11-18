@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>D:\vclib\SDL2-2.30.8\include;D:\vclib\SDL2_image-2.8.2\include;D:\vclib\SDL2_ttf-2.22.0\include;D:\Users\mvaga\Developer\libunifex\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\vclib\SDL2-2.30.8\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64\optional;D:\vclib\SDL2_ttf-2.22.0\lib\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\vclib\SDL2-2.30.8\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64;D:\vclib\SDL2_image-2.8.2\lib\x64\optional;D:\vclib\SDL2_ttf-2.22.0\lib\x64;D:\Users\mvaga\Developer\libunifex\build\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -113,7 +113,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;gmock_main.lib;gtest.lib;gtest_main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,6 +155,7 @@
     <ClInclude Include="src\selectablerect.h" />
     <ClInclude Include="src\stringstuff.h" />
     <ClInclude Include="src\sdlengine.h" />
+    <ClInclude Include="src\unifextest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

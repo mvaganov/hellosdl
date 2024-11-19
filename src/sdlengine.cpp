@@ -77,7 +77,6 @@ SdlEngine::ErrorCode SdlEngine::Release() {
 SdlEngine::ErrorCode SdlEngine::Init(std::string windowName, Renderer renderer)
 {
 	if (_initialized) {
-		// TODO change windowname, or change renderer
 		ErrorMessage = string_format("Re-initialization is unsupported");
 		return SdlEngine::ErrorCode::NotImplemented;
 	}

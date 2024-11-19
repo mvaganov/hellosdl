@@ -17,7 +17,8 @@ public:
 
 	SdlText(std::string text, std::string font, int size) : SdlObject(text), SdlTexture(NULL), _srcRect(), _destRect() {
 		SetText(text, font, size);
-		SdlEngine::GetInstance()->RegisterDrawable(this);
+		// TODO make a smarter way to register, so that objects that are contained are removed from the engine list, and haandled as child objects
+		SdlEngine::GetInstance()->RegisterDrawable(this); 
 	}
 
 	~SdlText() {

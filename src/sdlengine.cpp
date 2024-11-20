@@ -199,7 +199,7 @@ void SdlEngine::Render() {
 
 void SdlEngine::ProcessDelegates(std::vector<SdlEventProcessor*> eventProcessors, const SDL_Event& e) {
 	for (int i = 0; i < eventProcessors.size(); ++i) {
-		eventProcessors[i]->ProcessInput(e);
+		eventProcessors[i]->HandleEvent(e);
 	}
 }
 

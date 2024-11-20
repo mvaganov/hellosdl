@@ -4,7 +4,7 @@
 #include <functional>
 #include "sdlobject.h"
 
-class SdlComponentContainerInterface : public SdlUpdatable, public SdlDrawable {
+class SdlComponentContainerInterface : public SdlUpdatable, public SdlDrawable, public SdlEventProcessor {
 public:
 	virtual void Update() = 0;
 	virtual void Draw(SDL_Renderer* g) = 0;
@@ -47,12 +47,14 @@ private:
 	//ComponentContainer<SdlDrawable> _drawable;
 	std::vector<SdlUpdatable*> _updatable;
 	std::vector<SdlDrawable*> _drawable;
+	std::vector<SdlEventProcessor*> _eventProcessors;
 	std::vector<std::shared_ptr<SdlNamed>> _list;
 public:
 	SdlComponentContainer() {}
 	~SdlComponentContainer() {
 		_updatable.clear();
 		_drawable.clear();
+		_eventProcessors.clear();
 	}
 	void Update() {
 		for (auto i : _updatable) {
@@ -64,15 +66,24 @@ public:
 			i->Draw(g);
 		}
 	}
+	void HandleEvent(const SDL_Event& e) {
+		for (auto i : _eventProcessors) {
+			i->HandleEvent(e);
+		}
+	}
 	void AddComponent(std::shared_ptr<SdlNamed> ptr) {
 		_list.push_back(ptr);
-		SdlUpdatable* updatable = dynamic_cast<SdlUpdatable*>(ptr.get());
+		SdlUpdatable* updatable = ptr->AsUpdatable();
 		if (updatable) {
 			_updatable.push_back(updatable);
 		}
-		SdlDrawable* drawable = dynamic_cast<SdlDrawable*>(ptr.get());
+		SdlDrawable* drawable = ptr->AsDrawable();
 		if (drawable) {
 			_drawable.push_back(drawable);
+		}
+		SdlEventProcessor* eventable = ptr->AsEventProcessor();
+		if (eventable) {
+			_eventProcessors.push_back(eventable);
 		}
 	}
 	virtual int GetUpdateCount() const { return (int)_updatable.size(); }

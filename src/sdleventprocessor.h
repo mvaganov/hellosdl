@@ -5,7 +5,7 @@
 
 class SdlEventProcessor {
 public:
-	virtual void ProcessInput(const SDL_Event& e) = 0;
+	virtual void HandleEvent(const SDL_Event& e) = 0;
 };
 
 class SdlDrawable {
@@ -22,9 +22,7 @@ class SdlNamed {
 public:
 	virtual const std::string& GetName() const = 0;
 	virtual void SetName(std::string name) = 0;
-};
-
-class SdlHandleEvent {
-public:
-	virtual void HandleEvent(const SDL_Event& e) = 0;
+	virtual SdlEventProcessor* AsEventProcessor() = 0;
+	virtual SdlDrawable* AsDrawable() = 0;
+	virtual SdlUpdatable* AsUpdatable() = 0;
 };

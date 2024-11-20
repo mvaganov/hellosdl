@@ -30,6 +30,10 @@ public:
 		SdlEngine::GetInstance()->UnregisterDrawable(this);
 	}
 
+	virtual SdlEventProcessor* AsEventProcessor() { return nullptr; }
+	virtual SdlDrawable* AsDrawable() { return this; }
+	virtual SdlUpdatable* AsUpdatable() { return nullptr; }
+
 	const std::string& GetName() const { return SdlObject::GetName(); }
 	const std::string& GetText() const { return GetName(); }
 

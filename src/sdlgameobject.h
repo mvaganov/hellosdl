@@ -20,9 +20,22 @@ public:
 	virtual std::shared_ptr <SdlHierarchedInterface> GetChild(int index) { return _hierarchy.GetChild(index); }
 	virtual std::shared_ptr<SdlHierarchedInterface> GetParent() const { return _hierarchy.GetParent(); }
 	virtual void SetParent(std::shared_ptr<SdlHierarchedInterface> parent) { _hierarchy.SetParent(parent); }
-	virtual void Update() { _container.Update(); }
-	virtual void Draw(SDL_Renderer* g) { _container.Draw(g); }
+	virtual void Update() {
+		_container.Update();
+		_hierarchy.Update();
+	}
+	virtual void Draw(SDL_Renderer* g) {
+		_container.Draw(g);
+		_hierarchy.Draw(g);
+	}
+	virtual void HandleEvent(const SDL_Event& e) {
+		_container.HandleEvent(e);
+		_hierarchy.HandleEvent(e);
+	}
 	void AddComponent(std::shared_ptr<SdlNamed> ptr) { _container.AddComponent(ptr); }
 	virtual int GetUpdateCount() const { return _container.GetUpdateCount(); }
 	virtual int GetDrawCount() const { return _container.GetDrawCount(); }
+	virtual SdlEventProcessor* AsEventProcessor() { return this; }
+	virtual SdlDrawable* AsDrawable() { return this; }
+	virtual SdlUpdatable* AsUpdatable() { return this; }
 };

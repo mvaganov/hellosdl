@@ -2,7 +2,7 @@
 #include "sdleventprocessor.h"
 #include "rect.h"
 #include <string>
-#include "sdlengine.h"
+#include "vyengine.h"
 #include "sdlobject.h"
 
 // TODO implement scrolling function that moves the _srcRect
@@ -18,16 +18,16 @@ public:
 	SdlText(std::string text, std::string font, int size) : SdlObject(text), SdlTexture(NULL), _srcRect(), _destRect() {
 		SetText(text, font, size);
 		// TODO make a smarter way to register, so that objects that are contained are removed from the engine list, and haandled as child objects
-		SdlEngine::GetInstance()->RegisterDrawable(this); 
+		VyEngine::GetInstance()->RegisterDrawable(this); 
 	}
 
 	~SdlText() {
-		SdlEngine* engine = SdlEngine::GetInstance();
+		VyEngine* engine = VyEngine::GetInstance();
 		if (SdlTexture != NULL) {
 			engine->ReleaseSdlTexture(SdlTexture);
 			SdlTexture = NULL;
 		}
-		SdlEngine::GetInstance()->UnregisterDrawable(this);
+		VyEngine::GetInstance()->UnregisterDrawable(this);
 	}
 
 	virtual SdlEventProcessor* AsEventProcessor() { return nullptr; }
@@ -41,7 +41,7 @@ public:
 	Rect& SrcRect() { return _srcRect; }
 
 	void SetText(std::string text, std::string font, int fontSize) {
-		SdlEngine* engine = SdlEngine::GetInstance();
+		VyEngine* engine = VyEngine::GetInstance();
 		bool setFont = font != "";
 		bool setSize = fontSize > 0;
 		if ((setFont && font != engine->GetFontName())
@@ -58,7 +58,7 @@ public:
 			_destRect.SetSize(0, 0);
 			return;
 		}
-		SdlEngine::ErrorCode err = engine->CreateText(GetText(), SdlTexture);
+		VyEngine::ErrorCode err = engine->CreateText(GetText(), SdlTexture);
 		engine->FailFast();
 		Coord size = engine->GetTextureSize(SdlTexture);
 		_destRect.SetSize(size);

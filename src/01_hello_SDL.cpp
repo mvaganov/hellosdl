@@ -2,7 +2,7 @@
 #if false
 #include "unifextest.h"
 #else
-#include "sdlengine.h"
+#include "vyengine.h"
 #include <stdio.h>
 #include <chrono>
 #include "button.h"
@@ -28,13 +28,13 @@ std::shared_ptr<SdlGameObject> CreateButton(std::string buttonName, std::string 
 }
 
 int main( int argc, char* args[] )
-{	SdlEngine sdl(SCREEN_WIDTH, SCREEN_HEIGHT);
+{	VyEngine sdl(SCREEN_WIDTH, SCREEN_HEIGHT);
 	sdl.RegisterKeyDown(27, (size_t)&sdl, [&sdl](SDL_Event e) {
 		SDL_Event quitEvent;
 		quitEvent.type = SDL_QUIT;
 		sdl.ProcessEvent(quitEvent);
 	});
-	SdlEngine::ErrorCode err = sdl.Init("sdl", SdlEngine::Renderer::SDL_Renderer);
+	VyEngine::ErrorCode err = sdl.Init("sdl", VyEngine::Renderer::SDL_Renderer);
 	sdl.FailFast();
 	SDL_Texture* tex;
 	SDL_Texture* word;
@@ -44,7 +44,7 @@ int main( int argc, char* args[] )
 	Rect fillRect(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 	SDL_SetRenderDrawColor(g, 0xFF008800);
 	sdl.SetFont("arial", 24);
-	SdlEngine::ErrorCode wordErr = sdl.CreateText("these are words!", word);
+	VyEngine::ErrorCode wordErr = sdl.CreateText("these are words!", word);
 
 	std::shared_ptr<SdlGameObject> btn = CreateButton("btn", "HELLO!.........", { 500, 50, 100, 20 });
 

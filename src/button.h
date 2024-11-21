@@ -1,6 +1,6 @@
 #pragma once
 #include "rect.h"
-#include "sdlengine.h"
+#include "vyengine.h"
 #include "sdlhelper.h"
 #include "selectablerect.h"
 #include <functional>
@@ -21,8 +21,8 @@ public:
 		{}
 		Colors() : Colors(0xff888888, 0xffbbbbbb, 0xff8888ff, 0xffaaaaaa, 0xffcccccc) {}
 	};
-	SdlEngine::TriggeredEvent onPress;
-	SdlEngine::TriggeredEvent onRelease;
+	VyEngine::TriggeredEvent onPress;
+	VyEngine::TriggeredEvent onRelease;
 private:
 	Button::State _buttonState;
 	int color;
@@ -47,7 +47,7 @@ public:
 	virtual SdlUpdatable* AsUpdatable() { return this; }
 
 	void Register() {
-		SdlEngine* sdl = SdlEngine::GetInstance();
+		VyEngine* sdl = VyEngine::GetInstance();
 		sdl->RegisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandleEvent(e); });
 		sdl->RegisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this, [&](SDL_Event e) { HandleEvent(e); });
 		sdl->RegisterDrawable(this);
@@ -55,7 +55,7 @@ public:
 	}
 
 	void Unregister() {
-		SdlEngine* sdl = SdlEngine::GetInstance();
+		VyEngine* sdl = VyEngine::GetInstance();
 		sdl->UnregisterMouseDown(SDL_MOUSE_MAINCLICK, (size_t)this);
 		sdl->UnregisterMouseUp(SDL_MOUSE_MAINCLICK, (size_t)this);
 		sdl->UnregisterDrawable(this);
@@ -65,7 +65,7 @@ public:
 	virtual void HandleEvent(const SDL_Event& e) {
 		switch (e.button.state) {
 		case SDL_PRESSED: {
-			bool mouseOver = IsContains(SdlEngine::GetInstance()->MousePosition);
+			bool mouseOver = IsContains(VyEngine::GetInstance()->MousePosition);
 			_selected = mouseOver;
 			if (mouseOver) {
 				held = true;
@@ -114,7 +114,7 @@ public:
 			// TODO when deactivated, remove it from the list instead.
 			return;
 		}
-		SdlEngine* engine = SdlEngine::GetInstance();
+		VyEngine* engine = VyEngine::GetInstance();
 		bool mouseOver = IsContains(engine->MousePosition);
 		//printf("%d, %d,     %d %d\n", engine->MousePosition.x, engine->MousePosition.y, mouseOver, isPressed);
 		if (mouseOver) {

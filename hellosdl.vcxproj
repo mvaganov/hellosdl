@@ -138,7 +138,7 @@
     <ClCompile Include="src\rect.cpp" />
     <ClCompile Include="src\sdlhelper.cpp" />
     <ClCompile Include="src\stringstuff.cpp" />
-    <ClCompile Include="src\sdlengine.cpp" />
+    <ClCompile Include="src\vyengine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\button.h" />
@@ -154,7 +154,7 @@
     <ClInclude Include="src\sdltext.h" />
     <ClInclude Include="src\selectablerect.h" />
     <ClInclude Include="src\stringstuff.h" />
-    <ClInclude Include="src\sdlengine.h" />
+    <ClInclude Include="src\vyengine.h" />
     <ClInclude Include="src\unifextest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

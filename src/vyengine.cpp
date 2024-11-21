@@ -1,4 +1,4 @@
-#include "sdlengine.h"
+#include "vyengine.h"
 #include "stringstuff.h"
 #include <map>
 #include <cctype>
@@ -8,16 +8,16 @@
 
 #define CLEAR_ARRAY(arr) memset(arr, 0, sizeof(arr))
 
-SdlEngine * SdlEngine::_instance = NULL;
+VyEngine * VyEngine::_instance = NULL;
 
-void SdlEngine::FailFast() {
+void VyEngine::FailFast() {
 	if (ErrorMessage != "") {
 		printf(ErrorMessage.c_str());
-		exit((int)SdlEngine::ErrorCode::Failure);
+		exit((int)VyEngine::ErrorCode::Failure);
 	}
 }
 
-SdlEngine::SdlEngine(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
+VyEngine::VyEngine(int width, int height) : MouseClickState(0), _window(NULL), _screenSurface(NULL), _width(width), _height(height),
 _rendererKind(Renderer::None), _running(false), _initialized(false), _currentFont(NULL),
 _isPressedKeyMask(), _isMousePressed(), _isPressedKeyMaskScancode(),
 _managedSurfaces(), _fonts(), _eventProcessors(), _todo(NULL), _todoNow(NULL), _currentFontSize(0) {
@@ -25,7 +25,7 @@ _managedSurfaces(), _fonts(), _eventProcessors(), _todo(NULL), _todoNow(NULL), _
 	if (_instance == NULL) {
 		_instance = this;
 	} else {
-		printf("duplicate SdlEngine being created? already have at %016llux", (size_t)_instance);
+		printf("duplicate VyEngine being created? already have at %016llux", (size_t)_instance);
 	}
 	CLEAR_ARRAY(_isPressedKeyMask);
 	CLEAR_ARRAY(_isPressedKeyMaskScancode);
@@ -34,11 +34,11 @@ _managedSurfaces(), _fonts(), _eventProcessors(), _todo(NULL), _todoNow(NULL), _
 	_todoNow = DelegateListPtr(new std::vector<DelegateNextFrame>());
 }
 
-SdlEngine::~SdlEngine() {
+VyEngine::~VyEngine() {
 	Release();
 }
 
-SdlEngine::ErrorCode SdlEngine::Release() {
+VyEngine::ErrorCode VyEngine::Release() {
 	for (int i = 0; i < _managedSurfaces.size(); ++i) {
 		SDL_Surface* loadedSurface = _managedSurfaces[i];
 		if (loadedSurface == NULL) {
@@ -71,21 +71,21 @@ SdlEngine::ErrorCode SdlEngine::Release() {
 		IMG_Quit();
 		SDL_Quit();
 	}
-	return SdlEngine::ErrorCode::Success;
+	return VyEngine::ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::Init(std::string windowName, Renderer renderer)
+VyEngine::ErrorCode VyEngine::Init(std::string windowName, Renderer renderer)
 {
 	if (_initialized) {
 		ErrorMessage = string_format("Re-initialization is unsupported");
-		return SdlEngine::ErrorCode::NotImplemented;
+		return VyEngine::ErrorCode::NotImplemented;
 	}
 	_running = false;
 	_rendererKind = Renderer::None;
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		ErrorMessage = string_format("SDL could not initialize! SDL_Error: %s", SDL_GetError());
-		return SdlEngine::ErrorCode::InitializationFailure;
+		return VyEngine::ErrorCode::InitializationFailure;
 	}
 
 	//Set texture filtering to linear
@@ -99,11 +99,11 @@ SdlEngine::ErrorCode SdlEngine::Init(std::string windowName, Renderer renderer)
 	if (_window == NULL)
 	{
 		ErrorMessage = string_format("Window could not be created! SDL_Error: %s", SDL_GetError());
-		return SdlEngine::ErrorCode::WindowCreationFailure;
+		return VyEngine::ErrorCode::WindowCreationFailure;
 	}
 
 	_rendererKind = renderer;
-	SdlEngine::ErrorCode errorCode = ErrorCode::NotImplemented;
+	VyEngine::ErrorCode errorCode = ErrorCode::NotImplemented;
 	switch (renderer) {
 	case Renderer::SDL_Surface:
 		errorCode = InitSDL_Surface();
@@ -133,23 +133,23 @@ SdlEngine::ErrorCode SdlEngine::Init(std::string windowName, Renderer renderer)
 	return ErrorCode::Success;
 }
 
-bool SdlEngine::IsRunning() {
+bool VyEngine::IsRunning() {
 	return _running;
 }
 
-SDL_Surface* SdlEngine::GetScreenSurface() { return this->_screenSurface; }
+SDL_Surface* VyEngine::GetScreenSurface() { return this->_screenSurface; }
 
-SDL_Renderer* SdlEngine::GetRenderer() { return this->_renderer; }
+SDL_Renderer* VyEngine::GetRenderer() { return this->_renderer; }
 
-TTF_Font* SdlEngine::GetFont() { return this->_currentFont; }
+TTF_Font* VyEngine::GetFont() { return this->_currentFont; }
 
-std::string SdlEngine::GetFontName() { return this->_currentFontName; }
+std::string VyEngine::GetFontName() { return this->_currentFontName; }
 
-std::string SdlEngine::GetFontId() { return this->_currentFontId; }
+std::string VyEngine::GetFontId() { return this->_currentFontId; }
 
-int SdlEngine::GetFontSize() { return this->_currentFontSize; }
+int VyEngine::GetFontSize() { return this->_currentFontSize; }
 
-SdlEngine::ErrorCode SdlEngine::SetFont(std::string fontName, int size) {
+VyEngine::ErrorCode VyEngine::SetFont(std::string fontName, int size) {
 	std::string savedName = string_format("%s%d", fontName.c_str(), size);
 	auto iter = _fonts.find(savedName);
 	if (iter == _fonts.end()) {
@@ -157,7 +157,7 @@ SdlEngine::ErrorCode SdlEngine::SetFont(std::string fontName, int size) {
 		TTF_Font* font = TTF_OpenFont(path.c_str(), size);
 		if (font == NULL) {
 			ErrorMessage = string_format("could not load %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-			SdlEngine::ErrorCode::MissingResource;
+			VyEngine::ErrorCode::MissingResource;
 		}
 		_fonts[savedName] = font;
 		_currentFont = font;
@@ -168,10 +168,10 @@ SdlEngine::ErrorCode SdlEngine::SetFont(std::string fontName, int size) {
 	_currentFontName = fontName;
 	_currentFontSize = size;
 	printf("current font: %s\n", _currentFontId.c_str());
-	return SdlEngine::ErrorCode::Success;
+	return VyEngine::ErrorCode::Success;
 }
 
-void SdlEngine::ClearGraphics() {
+void VyEngine::ClearGraphics() {
 	switch (_rendererKind) {
 	case Renderer::SDL_Surface:
 		SDL_FillRect(_screenSurface, NULL, SDL_MapRGBA(_screenSurface->format, 0xFF, 0xFF, 0xFF, 0x00));
@@ -182,7 +182,7 @@ void SdlEngine::ClearGraphics() {
 	}
 }
 
-void SdlEngine::Render() {
+void VyEngine::Render() {
 	SDL_Renderer* g = GetRenderer();
 	for (int b = 0; b < _drawables.size(); ++b) {
 		_drawables[b]->Draw(g);
@@ -197,62 +197,62 @@ void SdlEngine::Render() {
 	}
 }
 
-void SdlEngine::ProcessDelegates(std::vector<SdlEventProcessor*> eventProcessors, const SDL_Event& e) {
+void VyEngine::ProcessDelegates(std::vector<SdlEventProcessor*> eventProcessors, const SDL_Event& e) {
 	for (int i = 0; i < eventProcessors.size(); ++i) {
 		eventProcessors[i]->HandleEvent(e);
 	}
 }
 
-void SdlEngine::ProcessDelegates(EventDelegateListMap& delegates, int id, const SDL_Event& e) {
+void VyEngine::ProcessDelegates(EventDelegateListMap& delegates, int id, const SDL_Event& e) {
 	EventDelegateListMap::iterator found = delegates.find(id);
 	if (found != delegates.end()) {
 		ProcessDelegates(found->second, e);
 	}
 }
 
-void SdlEngine::ProcessDelegates(SdlEngine::EventDelegateKeyedList& delegates, const SDL_Event& e) {
+void VyEngine::ProcessDelegates(VyEngine::EventDelegateKeyedList& delegates, const SDL_Event& e) {
 	for (auto it = delegates.begin(); it != delegates.end(); it++) {
 		it->second(e);
 	}
 }
 
-void SdlEngine::ProcessDelegates(SdlEngine::EventKeyedList& delegates){
+void VyEngine::ProcessDelegates(VyEngine::EventKeyedList& delegates){
 	for (auto it = delegates.begin(); it != delegates.end(); it++) {
 		it->second();
 	}
 }
 
-void SdlEngine::RegisterProcessor(SdlEventProcessor* eventProcessor) {
+void VyEngine::RegisterProcessor(SdlEventProcessor* eventProcessor) {
 	_eventProcessors.push_back(eventProcessor);
 }
 
-void SdlEngine::UnregisterProcessor(SdlEventProcessor* eventProcessor) {
+void VyEngine::UnregisterProcessor(SdlEventProcessor* eventProcessor) {
 	auto found = std::find(_eventProcessors.begin(), _eventProcessors.end(), eventProcessor);
 	if (found == _eventProcessors.end()) { return; }
 	_eventProcessors.erase(found);
 }
 
-void SdlEngine::RegisterDrawable(SdlDrawable* drawable) {
+void VyEngine::RegisterDrawable(SdlDrawable* drawable) {
 	_drawables.push_back(drawable);
 }
 
-void SdlEngine::UnregisterDrawable(SdlDrawable* drawable) {
+void VyEngine::UnregisterDrawable(SdlDrawable* drawable) {
 	auto found = std::find(_drawables.begin(), _drawables.end(), drawable);
 	if (found == _drawables.end()) { return; }
 	_drawables.erase(found);
 }
 
-void SdlEngine::RegisterUpdatable(SdlUpdatable* updatable) {
+void VyEngine::RegisterUpdatable(SdlUpdatable* updatable) {
 	_updatable.push_back(updatable);
 }
 
-void SdlEngine::UnregisterUpdatable(SdlUpdatable* updatable) {
+void VyEngine::UnregisterUpdatable(SdlUpdatable* updatable) {
 	auto found = std::find(_updatable.begin(), _updatable.end(), updatable);
 	if (found == _updatable.end()) { return; }
 	_updatable.erase(found);
 }
 
-void SdlEngine::ProcessEvent(const SDL_Event& e)
+void VyEngine::ProcessEvent(const SDL_Event& e)
 {
 	switch (e.type) {
 	case SDL_QUIT:
@@ -294,7 +294,7 @@ void SdlEngine::ProcessEvent(const SDL_Event& e)
 	ProcessDelegates(this->_eventProcessors, e);
 }
 
-void SdlEngine::ServiceQueue() {
+void VyEngine::ServiceQueue() {
 	auto temp = _todoNow;
 	_todoNow = _todo;
 	_todo = temp;
@@ -306,12 +306,12 @@ void SdlEngine::ServiceQueue() {
 	_todoNow->clear();
 }
 
-void SdlEngine::Queue(SdlEngine::TriggeredEvent action, std::string src) {
+void VyEngine::Queue(VyEngine::TriggeredEvent action, std::string src) {
 	_todo->push_back({ src, action });
 }
 
 
-void SdlEngine::ProcessInput() {
+void VyEngine::ProcessInput() {
 	SDL_Event e;
 	std::map<int, EventDelegateKeyedList>::iterator found;
 	while (SDL_PollEvent(&e)) {
@@ -319,37 +319,37 @@ void SdlEngine::ProcessInput() {
 	}
 }
 
-void SdlEngine::Update() {
+void VyEngine::Update() {
 	for (int b = 0; b < _updatable.size(); ++b) {
 		_updatable[b]->Update();
 	}
 	ServiceQueue();
 }
 
-SdlEngine::ErrorCode SdlEngine::InitSDL_Surface() {
+VyEngine::ErrorCode VyEngine::InitSDL_Surface() {
 	_screenSurface = SDL_GetWindowSurface(_window);
 	if (_screenSurface == NULL)
 	{
 		ErrorMessage = string_format("Window surface could not be retrieved! SDL_Error: %s", SDL_GetError());
-		return SdlEngine::ErrorCode::WindowCreationFailure;
+		return VyEngine::ErrorCode::WindowCreationFailure;
 	}
 	SDL_FillRect(_screenSurface, NULL, SDL_MapRGB(_screenSurface->format, 0xFF, 0xFF, 0xFF));
-	return SdlEngine::ErrorCode::Success;
+	return VyEngine::ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::InitSDL_Renderer() {
+VyEngine::ErrorCode VyEngine::InitSDL_Renderer() {
 	_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
 	if (_renderer == NULL)
 	{
 		ErrorMessage = string_format("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
-		return SdlEngine::ErrorCode::WindowCreationFailure;
+		return VyEngine::ErrorCode::WindowCreationFailure;
 	}
 	SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	return SdlEngine::ErrorCode::Success;
+	return VyEngine::ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::SetPressed(int sdlk, bool pressed) {
+VyEngine::ErrorCode VyEngine::SetPressed(int sdlk, bool pressed) {
 	// TODO do some performance analysis. is int faster than longlong and unsignedchar?
 	int* field = NULL;
 	if (sdlk >= 0 && sdlk < 256) {
@@ -383,7 +383,7 @@ SdlEngine::ErrorCode SdlEngine::SetPressed(int sdlk, bool pressed) {
 	return ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::IsPressed(int sdlk, bool& out_pressed) {
+VyEngine::ErrorCode VyEngine::IsPressed(int sdlk, bool& out_pressed) {
 	int* field = NULL;
 	if (sdlk >= 0 && sdlk < 256) {
 		field = this->_isPressedKeyMask;
@@ -423,7 +423,7 @@ std::string str_tolower(std::string s)
 	return s;
 }
 
-SdlEngine::ErrorCode SdlEngine::LoadSdlSurfaceBasic(std::string path, SDL_Surface*& out_surface) {
+VyEngine::ErrorCode VyEngine::LoadSdlSurfaceBasic(std::string path, SDL_Surface*& out_surface) {
 	std::string lowercasePath = str_tolower(path);
 	if (ends_with(lowercasePath, "bmp")) {
 		out_surface = SDL_LoadBMP(path.c_str());
@@ -441,7 +441,7 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlSurfaceBasic(std::string path, SDL_Surfac
 	return ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface) {
+VyEngine::ErrorCode VyEngine::LoadSdlTextBasic(std::string text, SDL_Surface*& out_surface) {
 	SDL_Color textColor;
 	SDL_GetRenderDrawColor(_renderer, &textColor.r, &textColor.g, &textColor.b, &textColor.a);
 	out_surface = TTF_RenderText_Solid(_currentFont, text.c_str(), textColor);
@@ -453,7 +453,7 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlTextBasic(std::string text, SDL_Surface*&
 	return ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::LoadSdlSurface(std::string path, SDL_Surface*& out_surface) {
+VyEngine::ErrorCode VyEngine::LoadSdlSurface(std::string path, SDL_Surface*& out_surface) {
 	SDL_Surface* loadedSurface = NULL;
 	ErrorCode err = LoadSdlSurfaceBasic(path, loadedSurface);
 	if (err != ErrorCode::Success) { return err; }
@@ -469,7 +469,7 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlSurface(std::string path, SDL_Surface*& o
 	return ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::LoadSdlTexture(std::string path, SDL_Texture*& out_texture) {
+VyEngine::ErrorCode VyEngine::LoadSdlTexture(std::string path, SDL_Texture*& out_texture) {
 	SDL_Surface* loadedSurface = NULL;
 	ErrorCode err = LoadSdlSurfaceBasic(path, loadedSurface);
 	if (err != ErrorCode::Success) { return err; }
@@ -489,7 +489,7 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlTexture(std::string path, SDL_Texture*& o
 	return ErrorCode::Success;
 }
 
-SdlEngine::ErrorCode SdlEngine::LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture) {
+VyEngine::ErrorCode VyEngine::LoadSdlTexture(SDL_Surface* loadedSurface, SDL_Texture*& out_texture) {
 	out_texture = SDL_CreateTextureFromSurface(_renderer, loadedSurface);
 	if (out_texture == NULL) {
 		ErrorMessage = string_format("Unable to create texture from SDL_Surface! SDL Error: %s\n", SDL_GetError());
@@ -499,18 +499,18 @@ SdlEngine::ErrorCode SdlEngine::LoadSdlTexture(SDL_Surface* loadedSurface, SDL_T
 	return ErrorCode::Success;
 }
 
-void SdlEngine::ReleaseSdlTexture(SDL_Texture* texture) {
+void VyEngine::ReleaseSdlTexture(SDL_Texture* texture) {
 	auto end = _managedTextures.end();
 	_managedTextures.erase(std::remove(_managedTextures.begin(), end, (size_t)texture), end);
 }
 
-Coord SdlEngine::GetTextureSize(SDL_Texture* texture) {
+Coord VyEngine::GetTextureSize(SDL_Texture* texture) {
 	Coord size;
 	SDL_QueryTexture(texture, NULL, NULL, &size.x, &size.y);
 	return size;
 }
 
-SdlEngine::ErrorCode SdlEngine::CreateText(std::string text, SDL_Texture*& out_texture) {
+VyEngine::ErrorCode VyEngine::CreateText(std::string text, SDL_Texture*& out_texture) {
 	SDL_Surface* loadedSurface = NULL;
 	ErrorCode err = LoadSdlTextBasic(text, loadedSurface);
 	if (err != ErrorCode::Success) { return err; }
@@ -526,56 +526,56 @@ SdlEngine::ErrorCode SdlEngine::CreateText(std::string text, SDL_Texture*& out_t
 	return ErrorCode::Success;
 }
 
-void AddDelegateToList(SdlEngine::EventDelegateListMap& map, int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
-	SdlEngine::EventDelegateKeyedList* list = NULL;
+void AddDelegateToList(VyEngine::EventDelegateListMap& map, int button, size_t owner, VyEngine::EventDelegate eventDelegate) {
+	VyEngine::EventDelegateKeyedList* list = NULL;
 	auto found = map.find(button);
 	if (found != map.end()) {
 		list = &found->second;
 	} else {
-		map[button] = SdlEngine::EventDelegateKeyedList();
+		map[button] = VyEngine::EventDelegateKeyedList();
 		auto found = map.find(button);
 		list = &found->second;
 	}
 	(*list)[owner] = eventDelegate;
 }
 
-void RemoveDelegateFromList(SdlEngine::EventDelegateListMap& map, int button, size_t owner) {
+void RemoveDelegateFromList(VyEngine::EventDelegateListMap& map, int button, size_t owner) {
 	auto found = map.find(button);
 	if (found == map.end()) { return; }
 	found->second.erase(owner);
 }
 
-void SdlEngine::RegisterMouseDown(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
+void VyEngine::RegisterMouseDown(int button, size_t owner, VyEngine::EventDelegate eventDelegate) {
 	button &= ~SDL_MOUSEMOTION;
 	AddDelegateToList(_mouseBindDown, button, owner, eventDelegate);
 }
 
-void SdlEngine::RegisterMouseUp(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
+void VyEngine::RegisterMouseUp(int button, size_t owner, VyEngine::EventDelegate eventDelegate) {
 	button &= ~SDL_MOUSEMOTION;
 	AddDelegateToList(_mouseBindUp, button, owner, eventDelegate);
 }
 
-void SdlEngine::RegisterKeyDown(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
+void VyEngine::RegisterKeyDown(int button, size_t owner, VyEngine::EventDelegate eventDelegate) {
 	AddDelegateToList(_keyBindDown, button, owner, eventDelegate);
 }
 
-void SdlEngine::RegisterKeyUp(int button, size_t owner, SdlEngine::EventDelegate eventDelegate) {
+void VyEngine::RegisterKeyUp(int button, size_t owner, VyEngine::EventDelegate eventDelegate) {
 	AddDelegateToList(_keyBindUp, button, owner, eventDelegate);
 }
 
-void SdlEngine::UnregisterMouseDown(int button, size_t owner) {
+void VyEngine::UnregisterMouseDown(int button, size_t owner) {
 	RemoveDelegateFromList(_mouseBindDown, button, owner);
 }
 
-void SdlEngine::UnregisterMouseUp(int button, size_t owner) {
+void VyEngine::UnregisterMouseUp(int button, size_t owner) {
 	RemoveDelegateFromList(_mouseBindUp, button, owner);
 }
 
-void SdlEngine::UnregisterKeyDown(int button, size_t owner) {
+void VyEngine::UnregisterKeyDown(int button, size_t owner) {
 	RemoveDelegateFromList(_keyBindDown, button, owner);
 }
 
-void SdlEngine::UnregisterKeyUp(int button, size_t owner) {
+void VyEngine::UnregisterKeyUp(int button, size_t owner) {
 	RemoveDelegateFromList(_keyBindUp, button, owner);
 }
 

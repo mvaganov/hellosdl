@@ -2,7 +2,7 @@
 #include <SDL.h>
 #include <vector>
 #include "rect.h"
-#include "sdlengine.h"
+#include "vyengine.h"
 #include "sdlobject.h"
 #include "componentcontainer.h"
 #include "sdlhierarchied.h"

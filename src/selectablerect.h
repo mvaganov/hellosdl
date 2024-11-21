@@ -1,12 +1,12 @@
 #pragma once
 #include "rect.h"
-#include "sdlengine.h"
+#include "vyengine.h"
 #include "sdlhelper.h"
 #include "sdleventprocessor.h"
 #include <functional>
 #include <algorithm>
 
-// TODO register self with SdlEngine, and mark as needing navigation recalculation
+// TODO register self with VyEngine, and mark as needing navigation recalculation
 class SelectableRect : public Rect, public SdlEventProcessor {
 protected:
 	bool _selected;
@@ -17,9 +17,9 @@ protected:
 	bool _active;
 	SelectableRect* _next[(int)Rect::Dir::Count];
 public:
-	SdlEngine::EventDelegateKeyedList OnKeyEvent;
-	SdlEngine::EventKeyedList OnSelected;
-	SdlEngine::EventKeyedList OnUnselected;
+	VyEngine::EventDelegateKeyedList OnKeyEvent;
+	VyEngine::EventKeyedList OnSelected;
+	VyEngine::EventKeyedList OnUnselected;
 
 	bool IsSelected() {
 		return _selected;
@@ -43,24 +43,24 @@ public:
 	SelectableRect(SDL_Rect rect) : Rect(rect), _selected(false), _navigatable(true), _active(true), _next() {
 		memset(_next, NULL, sizeof(_next));
 		OnKeyEvent[(size_t)this] = [this](SDL_Event e) { HandleNavigationKey(e); };
-		SdlEngine::GetInstance()->RegisterProcessor(this);
+		VyEngine::GetInstance()->RegisterProcessor(this);
 	}
 
 	virtual void ProcessInput(const SDL_Event& e) {
 		switch (e.type) {
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
-			SdlEngine::ProcessDelegates(OnKeyEvent, e);
+			VyEngine::ProcessDelegates(OnKeyEvent, e);
 			break;
 		}
 	}
 
 	void NotifySelect() {
-		SdlEngine::ProcessDelegates(OnSelected);
+		VyEngine::ProcessDelegates(OnSelected);
 	}
 
 	void NotifyUnselect() {
-		SdlEngine::ProcessDelegates(OnUnselected);
+		VyEngine::ProcessDelegates(OnUnselected);
 	}
 
 	void HandleNavigationKey(SDL_Event keyPress) {
@@ -82,7 +82,7 @@ public:
 		if (next == NULL) {
 			return;
 		}
-		SdlEngine::GetInstance()->Queue([this,next]() {
+		VyEngine::GetInstance()->Queue([this,next]() {
 			this->SetSelected(false);
 			next->SetSelected(true);
 		}, string_format(__FILE__ ":%d", __LINE__));

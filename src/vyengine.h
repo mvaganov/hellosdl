@@ -57,7 +57,7 @@ private:
 	std::vector<SDL_Surface*> _managedSurfaces;
 	std::vector<size_t> _managedTextures;
 	std::map<std::string, TTF_Font*> _fonts;
-	std::vector<SdlEventProcessor*> _eventProcessors;
+	std::vector<VyEventProcessor*> _eventProcessors;
 	std::vector<SdlDrawable*> _drawables;
 	std::vector<SdlUpdatable*> _updatable;
 	class DelegateNextFrame {
@@ -115,8 +115,8 @@ public:
 	void UnregisterMouseUp(int button, size_t owner);
 	void UnregisterKeyDown(int button, size_t owner);
 	void UnregisterKeyUp(int button, size_t owner);
-	void RegisterProcessor(SdlEventProcessor* eventProcessor);
-	void UnregisterProcessor(SdlEventProcessor* eventProcessor);
+	void RegisterProcessor(VyEventProcessor* eventProcessor);
+	void UnregisterProcessor(VyEventProcessor* eventProcessor);
 	void RegisterDrawable(SdlDrawable* drawable);
 	void UnregisterDrawable(SdlDrawable* drawable);
 	void RegisterUpdatable(SdlUpdatable* updatable);
@@ -127,7 +127,7 @@ public:
 	static void ProcessDelegates(VyEngine::EventDelegateListMap& delegates, int id, const SDL_Event& e);
 	static void ProcessDelegates(VyEngine::EventDelegateKeyedList& delegates, const SDL_Event& e);
 	static void ProcessDelegates(VyEngine::EventKeyedList& delegates);
-	static void ProcessDelegates(std::vector<SdlEventProcessor*> eventProcessors, const SDL_Event& e);
+	static void ProcessDelegates(std::vector<VyEventProcessor*> eventProcessors, const SDL_Event& e);
 private:
 	VyEngine::ErrorCode InitSDL_Surface();
 	VyEngine::ErrorCode InitSDL_Renderer();

@@ -35,7 +35,7 @@ public:
 	void AddComponent(std::shared_ptr<SdlNamed> ptr) { _container.AddComponent(ptr); }
 	virtual int GetUpdateCount() const { return _container.GetUpdateCount(); }
 	virtual int GetDrawCount() const { return _container.GetDrawCount(); }
-	virtual SdlEventProcessor* AsEventProcessor() { return this; }
+	virtual VyEventProcessor* AsEventProcessor() { return this; }
 	virtual SdlDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return this; }
 };

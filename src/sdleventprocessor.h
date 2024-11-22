@@ -3,7 +3,7 @@
 #include <SDL.h>
 #include <string>
 
-class SdlEventProcessor {
+class VyEventProcessor {
 public:
 	virtual void HandleEvent(const SDL_Event& e) = 0;
 };
@@ -22,7 +22,7 @@ class SdlNamed {
 public:
 	virtual const std::string& GetName() const = 0;
 	virtual void SetName(std::string name) = 0;
-	virtual SdlEventProcessor* AsEventProcessor() = 0;
+	virtual VyEventProcessor* AsEventProcessor() = 0;
 	virtual SdlDrawable* AsDrawable() = 0;
 	virtual SdlUpdatable* AsUpdatable() = 0;
 };

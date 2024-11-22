@@ -197,7 +197,7 @@ void VyEngine::Render() {
 	}
 }
 
-void VyEngine::ProcessDelegates(std::vector<SdlEventProcessor*> eventProcessors, const SDL_Event& e) {
+void VyEngine::ProcessDelegates(std::vector<VyEventProcessor*> eventProcessors, const SDL_Event& e) {
 	for (int i = 0; i < eventProcessors.size(); ++i) {
 		eventProcessors[i]->HandleEvent(e);
 	}
@@ -222,11 +222,11 @@ void VyEngine::ProcessDelegates(VyEngine::EventKeyedList& delegates){
 	}
 }
 
-void VyEngine::RegisterProcessor(SdlEventProcessor* eventProcessor) {
+void VyEngine::RegisterProcessor(VyEventProcessor* eventProcessor) {
 	_eventProcessors.push_back(eventProcessor);
 }
 
-void VyEngine::UnregisterProcessor(SdlEventProcessor* eventProcessor) {
+void VyEngine::UnregisterProcessor(VyEventProcessor* eventProcessor) {
 	auto found = std::find(_eventProcessors.begin(), _eventProcessors.end(), eventProcessor);
 	if (found == _eventProcessors.end()) { return; }
 	_eventProcessors.erase(found);

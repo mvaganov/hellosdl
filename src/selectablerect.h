@@ -7,7 +7,7 @@
 #include <algorithm>
 
 // TODO register self with VyEngine, and mark as needing navigation recalculation
-class SelectableRect : public Rect, public SdlEventProcessor {
+class SelectableRect : public Rect, public VyEventProcessor {
 protected:
 	bool _selected;
 	/// <summary>

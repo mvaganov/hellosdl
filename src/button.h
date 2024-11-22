@@ -42,7 +42,7 @@ public:
 		Unregister();
 	}
 
-	virtual SdlEventProcessor* AsEventProcessor() { return this; }
+	virtual VyEventProcessor* AsEventProcessor() { return this; }
 	virtual SdlDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return this; }
 

@@ -30,7 +30,7 @@ public:
 		VyEngine::GetInstance()->UnregisterDrawable(this);
 	}
 
-	virtual SdlEventProcessor* AsEventProcessor() { return nullptr; }
+	virtual VyEventProcessor* AsEventProcessor() { return nullptr; }
 	virtual SdlDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return nullptr; }
 

@@ -6,7 +6,7 @@
 #include <functional>
 #include "helper.h"
 
-class Button : public SdlNamed, public SelectableRect, public SdlDrawable, public SdlUpdatable {
+class Button : public SdlNamed, public SelectableRect, public VyDrawable, public SdlUpdatable {
 public:
 	enum class State { Normal, Hovered, Clicked, Selected, HoveredSelected };
 	class Colors {
@@ -43,7 +43,7 @@ public:
 	}
 
 	virtual VyEventProcessor* AsEventProcessor() { return this; }
-	virtual SdlDrawable* AsDrawable() { return this; }
+	virtual VyDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return this; }
 
 	void Register() {

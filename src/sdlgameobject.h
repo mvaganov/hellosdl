@@ -36,6 +36,6 @@ public:
 	virtual int GetUpdateCount() const { return _container.GetUpdateCount(); }
 	virtual int GetDrawCount() const { return _container.GetDrawCount(); }
 	virtual VyEventProcessor* AsEventProcessor() { return this; }
-	virtual SdlDrawable* AsDrawable() { return this; }
+	virtual VyDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return this; }
 };

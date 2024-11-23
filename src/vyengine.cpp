@@ -232,11 +232,11 @@ void VyEngine::UnregisterProcessor(VyEventProcessor* eventProcessor) {
 	_eventProcessors.erase(found);
 }
 
-void VyEngine::RegisterDrawable(SdlDrawable* drawable) {
+void VyEngine::RegisterDrawable(VyDrawable* drawable) {
 	_drawables.push_back(drawable);
 }
 
-void VyEngine::UnregisterDrawable(SdlDrawable* drawable) {
+void VyEngine::UnregisterDrawable(VyDrawable* drawable) {
 	auto found = std::find(_drawables.begin(), _drawables.end(), drawable);
 	if (found == _drawables.end()) { return; }
 	_drawables.erase(found);

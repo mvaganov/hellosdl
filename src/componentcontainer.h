@@ -4,7 +4,7 @@
 #include <functional>
 #include "sdlobject.h"
 
-class SdlComponentContainerInterface : public SdlUpdatable, public SdlDrawable, public VyEventProcessor {
+class SdlComponentContainerInterface : public SdlUpdatable, public VyDrawable, public VyEventProcessor {
 public:
 	virtual void Update() = 0;
 	virtual void Draw(SDL_Renderer* g) = 0;
@@ -44,9 +44,9 @@ public:
 class SdlComponentContainer : public SdlComponentContainerInterface {
 private:
 	//ComponentContainer<SdlUpdatable> _update;
-	//ComponentContainer<SdlDrawable> _drawable;
+	//ComponentContainer<VyDrawable> _drawable;
 	std::vector<SdlUpdatable*> _updatable;
-	std::vector<SdlDrawable*> _drawable;
+	std::vector<VyDrawable*> _drawable;
 	std::vector<VyEventProcessor*> _eventProcessors;
 	std::vector<std::shared_ptr<SdlNamed>> _list;
 public:
@@ -77,7 +77,7 @@ public:
 		if (updatable) {
 			_updatable.push_back(updatable);
 		}
-		SdlDrawable* drawable = ptr->AsDrawable();
+		VyDrawable* drawable = ptr->AsDrawable();
 		if (drawable) {
 			_drawable.push_back(drawable);
 		}

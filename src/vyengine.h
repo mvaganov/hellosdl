@@ -58,7 +58,7 @@ private:
 	std::vector<size_t> _managedTextures;
 	std::map<std::string, TTF_Font*> _fonts;
 	std::vector<VyEventProcessor*> _eventProcessors;
-	std::vector<SdlDrawable*> _drawables;
+	std::vector<VyDrawable*> _drawables;
 	std::vector<SdlUpdatable*> _updatable;
 	class DelegateNextFrame {
 	public:
@@ -117,8 +117,8 @@ public:
 	void UnregisterKeyUp(int button, size_t owner);
 	void RegisterProcessor(VyEventProcessor* eventProcessor);
 	void UnregisterProcessor(VyEventProcessor* eventProcessor);
-	void RegisterDrawable(SdlDrawable* drawable);
-	void UnregisterDrawable(SdlDrawable* drawable);
+	void RegisterDrawable(VyDrawable* drawable);
+	void UnregisterDrawable(VyDrawable* drawable);
 	void RegisterUpdatable(SdlUpdatable* updatable);
 	void UnregisterUpdatable(SdlUpdatable* updatable);
 	void ProcessEvent(const SDL_Event& e);

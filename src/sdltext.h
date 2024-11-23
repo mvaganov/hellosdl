@@ -7,7 +7,7 @@
 
 // TODO implement scrolling function that moves the _srcRect
 // TODO test me
-class SdlText : public SdlObject, public SdlDrawable {
+class SdlText : public SdlObject, public VyDrawable {
 public:
 	SDL_Texture* SdlTexture;
 	Rect _srcRect;
@@ -31,7 +31,7 @@ public:
 	}
 
 	virtual VyEventProcessor* AsEventProcessor() { return nullptr; }
-	virtual SdlDrawable* AsDrawable() { return this; }
+	virtual VyDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return nullptr; }
 
 	const std::string& GetName() const { return SdlObject::GetName(); }

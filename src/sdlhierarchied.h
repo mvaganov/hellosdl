@@ -23,6 +23,6 @@ public:
 	virtual std::shared_ptr<SdlHierarchedInterface> GetParent() const { return _parent; }
 	virtual void SetParent(std::shared_ptr<SdlHierarchedInterface> parent) { _parent = parent; }
 	virtual VyEventProcessor* AsEventProcessor() { return this; }
-	virtual SdlDrawable* AsDrawable() { return this; }
+	virtual VyDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return this; }
 };

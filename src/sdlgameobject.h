@@ -7,19 +7,19 @@
 #include "componentcontainer.h"
 #include "sdlhierarchied.h"
 
-class SdlGameObject : public SdlNamed, public SdlComponentContainerInterface, public SdlHierarchedInterface {
+class SdlGameObject : public SdlNamed, public SdlComponentContainerInterface, public VyHierarchedInterface {
 public:
 private:
 	SdlComponentContainer _container;
-	SdlHierarched _hierarchy;
+	VyHierarched _hierarchy;
 public:
 	SdlGameObject(std::string name) : _hierarchy(name) {}
 	virtual const std::string& GetName() const { return _hierarchy.GetName(); }
 	virtual void SetName(std::string name) { _hierarchy.SetName(name); }
 	virtual int GetChildCount() const { return _hierarchy.GetChildCount(); }
-	virtual std::shared_ptr <SdlHierarchedInterface> GetChild(int index) { return _hierarchy.GetChild(index); }
-	virtual std::shared_ptr<SdlHierarchedInterface> GetParent() const { return _hierarchy.GetParent(); }
-	virtual void SetParent(std::shared_ptr<SdlHierarchedInterface> parent) { _hierarchy.SetParent(parent); }
+	virtual std::shared_ptr <VyHierarchedInterface> GetChild(int index) { return _hierarchy.GetChild(index); }
+	virtual std::shared_ptr<VyHierarchedInterface> GetParent() const { return _hierarchy.GetParent(); }
+	virtual void SetParent(std::shared_ptr<VyHierarchedInterface> parent) { _hierarchy.SetParent(parent); }
 	virtual void Update() {
 		_container.Update();
 		_hierarchy.Update();

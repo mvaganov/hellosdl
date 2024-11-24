@@ -3,25 +3,25 @@
 #include "sdlobject.h"
 #include "componentcontainer.h"
 
-class SdlHierarchedInterface {
+class VyHierarchedInterface {
 public:
 	virtual int GetChildCount() const = 0;
-	virtual std::shared_ptr <SdlHierarchedInterface> GetChild(int index) = 0;
-	virtual std::shared_ptr<SdlHierarchedInterface> GetParent() const = 0;
-	virtual void SetParent(std::shared_ptr<SdlHierarchedInterface> parent) = 0;
+	virtual std::shared_ptr <VyHierarchedInterface> GetChild(int index) = 0;
+	virtual std::shared_ptr<VyHierarchedInterface> GetParent() const = 0;
+	virtual void SetParent(std::shared_ptr<VyHierarchedInterface> parent) = 0;
 };
 
-class SdlHierarched : public SdlObject, public SdlComponentContainer {
+class VyHierarched : public SdlObject, public SdlComponentContainer {
 public:
 private:
-	std::vector<std::shared_ptr<SdlHierarchedInterface>> _children;
-	std::shared_ptr<SdlHierarchedInterface> _parent;
+	std::vector<std::shared_ptr<VyHierarchedInterface>> _children;
+	std::shared_ptr<VyHierarchedInterface> _parent;
 public:
-	SdlHierarched(std::string name) : SdlObject(name), _children() {}
+	VyHierarched(std::string name) : SdlObject(name), _children() {}
 	virtual int GetChildCount() const { return (int)_children.size(); }
-	virtual std::shared_ptr <SdlHierarchedInterface> GetChild(int index) { return _children[index]; }
-	virtual std::shared_ptr<SdlHierarchedInterface> GetParent() const { return _parent; }
-	virtual void SetParent(std::shared_ptr<SdlHierarchedInterface> parent) { _parent = parent; }
+	virtual std::shared_ptr <VyHierarchedInterface> GetChild(int index) { return _children[index]; }
+	virtual std::shared_ptr<VyHierarchedInterface> GetParent() const { return _parent; }
+	virtual void SetParent(std::shared_ptr<VyHierarchedInterface> parent) { _parent = parent; }
 	virtual VyEventProcessor* AsEventProcessor() { return this; }
 	virtual VyDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return this; }

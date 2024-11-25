@@ -3,11 +3,11 @@
 #include <vector>
 #include "rect.h"
 #include "vyengine.h"
-#include "sdlobject.h"
+#include "vyobjectcommonbase.h"
 #include "componentcontainer.h"
 #include "sdlhierarchied.h"
 
-class SdlGameObject : public SdlNamed, public SdlComponentContainerInterface, public VyHierarchedInterface {
+class SdlGameObject : public VyInterface, public SdlComponentContainerInterface, public VyHierarchedInterface {
 public:
 private:
 	SdlComponentContainer _container;
@@ -32,7 +32,7 @@ public:
 		_container.HandleEvent(e);
 		_hierarchy.HandleEvent(e);
 	}
-	void AddComponent(std::shared_ptr<SdlNamed> ptr) { _container.AddComponent(ptr); }
+	void AddComponent(std::shared_ptr<VyInterface> ptr) { _container.AddComponent(ptr); }
 	virtual int GetUpdateCount() const { return _container.GetUpdateCount(); }
 	virtual int GetDrawCount() const { return _container.GetDrawCount(); }
 	virtual VyEventProcessor* AsEventProcessor() { return this; }

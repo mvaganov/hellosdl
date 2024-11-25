@@ -18,7 +18,7 @@ public:
 	virtual void Update() = 0;
 };
 
-class SdlNamed {
+class VyInterface {
 public:
 	virtual const std::string& GetName() const = 0;
 	virtual void SetName(std::string name) = 0;

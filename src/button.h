@@ -6,7 +6,7 @@
 #include <functional>
 #include "helper.h"
 
-class Button : public SdlNamed, public SelectableRect, public VyDrawable, public SdlUpdatable {
+class Button : public VyInterface, public SelectableRect, public VyDrawable, public SdlUpdatable {
 public:
 	enum class State { Normal, Hovered, Clicked, Selected, HoveredSelected };
 	class Colors {

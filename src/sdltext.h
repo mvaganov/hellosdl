@@ -3,11 +3,11 @@
 #include "rect.h"
 #include <string>
 #include "vyengine.h"
-#include "sdlobject.h"
+#include "vyobjectcommonbase.h"
 
 // TODO implement scrolling function that moves the _srcRect
 // TODO test me
-class SdlText : public SdlObject, public VyDrawable {
+class SdlText : public VyObjectCommonBase, public VyDrawable {
 public:
 	SDL_Texture* SdlTexture;
 	Rect _srcRect;
@@ -15,7 +15,7 @@ public:
 
 	SdlText(std::string text) : SdlText(text, "", -1) { }
 
-	SdlText(std::string text, std::string font, int size) : SdlObject(text), SdlTexture(NULL), _srcRect(), _destRect() {
+	SdlText(std::string text, std::string font, int size) : VyObjectCommonBase(text), SdlTexture(NULL), _srcRect(), _destRect() {
 		SetText(text, font, size);
 		// TODO make a smarter way to register, so that objects that are contained are removed from the engine list, and haandled as child objects
 		VyEngine::GetInstance()->RegisterDrawable(this); 
@@ -34,7 +34,7 @@ public:
 	virtual VyDrawable* AsDrawable() { return this; }
 	virtual SdlUpdatable* AsUpdatable() { return nullptr; }
 
-	const std::string& GetName() const { return SdlObject::GetName(); }
+	const std::string& GetName() const { return VyObjectCommonBase::GetName(); }
 	const std::string& GetText() const { return GetName(); }
 
 	Rect& DestRect() { return _destRect; }

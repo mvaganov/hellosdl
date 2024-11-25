@@ -2,13 +2,13 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include "sdlobject.h"
+#include "vyobjectcommonbase.h"
 
 class SdlComponentContainerInterface : public SdlUpdatable, public VyDrawable, public VyEventProcessor {
 public:
 	virtual void Update() = 0;
 	virtual void Draw(SDL_Renderer* g) = 0;
-	virtual void AddComponent(std::shared_ptr<SdlNamed> ptr) = 0;
+	virtual void AddComponent(std::shared_ptr<VyInterface> ptr) = 0;
 	virtual int GetUpdateCount() const = 0;
 	virtual int GetDrawCount() const = 0;
 };
@@ -48,7 +48,7 @@ private:
 	std::vector<SdlUpdatable*> _updatable;
 	std::vector<VyDrawable*> _drawable;
 	std::vector<VyEventProcessor*> _eventProcessors;
-	std::vector<std::shared_ptr<SdlNamed>> _list;
+	std::vector<std::shared_ptr<VyInterface>> _list;
 public:
 	SdlComponentContainer() {}
 	~SdlComponentContainer() {
@@ -71,7 +71,7 @@ public:
 			i->HandleEvent(e);
 		}
 	}
-	void AddComponent(std::shared_ptr<SdlNamed> ptr) {
+	void AddComponent(std::shared_ptr<VyInterface> ptr) {
 		_list.push_back(ptr);
 		SdlUpdatable* updatable = ptr->AsUpdatable();
 		if (updatable) {

@@ -11,7 +11,7 @@ public:
 	virtual void SetParent(std::shared_ptr<VyHierarchedInterface> parent) = 0;
 };
 
-class VyHierarched : public VyObjectCommonBase, public SdlComponentContainer {
+class VyHierarched : public VyObjectCommonBase, public VyComponentContainer {
 public:
 private:
 	std::vector<std::shared_ptr<VyHierarchedInterface>> _children;

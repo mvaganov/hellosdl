@@ -7,10 +7,10 @@
 #include "componentcontainer.h"
 #include "sdlhierarchied.h"
 
-class SdlGameObject : public VyInterface, public SdlComponentContainerInterface, public VyHierarchedInterface {
+class SdlGameObject : public VyInterface, public VyComponentContainerInterface, public VyHierarchedInterface {
 public:
 private:
-	SdlComponentContainer _container;
+	VyComponentContainer _container;
 	VyHierarched _hierarchy;
 public:
 	SdlGameObject(std::string name) : _hierarchy(name) {}

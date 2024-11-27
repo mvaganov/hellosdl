@@ -4,7 +4,7 @@
 #include <functional>
 #include "vyobjectcommonbase.h"
 
-class VyComponentContainerInterface : public SdlUpdatable, public VyDrawable, public VyEventProcessor {
+class VyComponentContainerInterface : public VyUpdatable, public VyDrawable, public VyEventProcessor {
 public:
 	virtual void Update() = 0;
 	virtual void Draw(SDL_Renderer* g) = 0;
@@ -43,9 +43,9 @@ public:
 
 class VyComponentContainer : public VyComponentContainerInterface {
 private:
-	//ComponentContainer<SdlUpdatable> _update;
+	//ComponentContainer<VyUpdatable> _update;
 	//ComponentContainer<VyDrawable> _drawable;
-	std::vector<SdlUpdatable*> _updatable;
+	std::vector<VyUpdatable*> _updatable;
 	std::vector<VyDrawable*> _drawable;
 	std::vector<VyEventProcessor*> _eventProcessors;
 	std::vector<std::shared_ptr<VyInterface>> _list;
@@ -73,7 +73,7 @@ public:
 	}
 	void AddComponent(std::shared_ptr<VyInterface> ptr) {
 		_list.push_back(ptr);
-		SdlUpdatable* updatable = ptr->AsUpdatable();
+		VyUpdatable* updatable = ptr->AsUpdatable();
 		if (updatable) {
 			_updatable.push_back(updatable);
 		}

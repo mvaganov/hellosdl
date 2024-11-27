@@ -37,5 +37,5 @@ public:
 	virtual int GetDrawCount() const { return _container.GetDrawCount(); }
 	virtual VyEventProcessor* AsEventProcessor() { return this; }
 	virtual VyDrawable* AsDrawable() { return this; }
-	virtual SdlUpdatable* AsUpdatable() { return this; }
+	virtual VyUpdatable* AsUpdatable() { return this; }
 };

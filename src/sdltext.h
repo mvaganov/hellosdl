@@ -32,7 +32,7 @@ public:
 
 	virtual VyEventProcessor* AsEventProcessor() { return nullptr; }
 	virtual VyDrawable* AsDrawable() { return this; }
-	virtual SdlUpdatable* AsUpdatable() { return nullptr; }
+	virtual VyUpdatable* AsUpdatable() { return nullptr; }
 
 	const std::string& GetName() const { return VyObjectCommonBase::GetName(); }
 	const std::string& GetText() const { return GetName(); }

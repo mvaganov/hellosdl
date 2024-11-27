@@ -59,7 +59,7 @@ private:
 	std::map<std::string, TTF_Font*> _fonts;
 	std::vector<VyEventProcessor*> _eventProcessors;
 	std::vector<VyDrawable*> _drawables;
-	std::vector<SdlUpdatable*> _updatable;
+	std::vector<VyUpdatable*> _updatable;
 	class DelegateNextFrame {
 	public:
 		std::string src;
@@ -119,8 +119,8 @@ public:
 	void UnregisterProcessor(VyEventProcessor* eventProcessor);
 	void RegisterDrawable(VyDrawable* drawable);
 	void UnregisterDrawable(VyDrawable* drawable);
-	void RegisterUpdatable(SdlUpdatable* updatable);
-	void UnregisterUpdatable(SdlUpdatable* updatable);
+	void RegisterUpdatable(VyUpdatable* updatable);
+	void UnregisterUpdatable(VyUpdatable* updatable);
 	void ProcessEvent(const SDL_Event& e);
 	void ServiceQueue();
 	void Queue(TriggeredEvent action, std::string src);

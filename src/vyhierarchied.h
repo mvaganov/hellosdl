@@ -24,5 +24,5 @@ public:
 	virtual void SetParent(std::shared_ptr<VyHierarchedInterface> parent) { _parent = parent; }
 	virtual VyEventProcessor* AsEventProcessor() { return this; }
 	virtual VyDrawable* AsDrawable() { return this; }
-	virtual SdlUpdatable* AsUpdatable() { return this; }
+	virtual VyUpdatable* AsUpdatable() { return this; }
 };

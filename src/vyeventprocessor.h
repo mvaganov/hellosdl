@@ -13,7 +13,7 @@ public:
 	virtual void Draw(SDL_Renderer* g) = 0;
 };
 
-class SdlUpdatable {
+class VyUpdatable {
 public:
 	virtual void Update() = 0;
 };
@@ -24,5 +24,5 @@ public:
 	virtual void SetName(std::string name) = 0;
 	virtual VyEventProcessor* AsEventProcessor() = 0;
 	virtual VyDrawable* AsDrawable() = 0;
-	virtual SdlUpdatable* AsUpdatable() = 0;
+	virtual VyUpdatable* AsUpdatable() = 0;
 };

@@ -242,11 +242,11 @@ void VyEngine::UnregisterDrawable(VyDrawable* drawable) {
 	_drawables.erase(found);
 }
 
-void VyEngine::RegisterUpdatable(SdlUpdatable* updatable) {
+void VyEngine::RegisterUpdatable(VyUpdatable* updatable) {
 	_updatable.push_back(updatable);
 }
 
-void VyEngine::UnregisterUpdatable(SdlUpdatable* updatable) {
+void VyEngine::UnregisterUpdatable(VyUpdatable* updatable) {
 	auto found = std::find(_updatable.begin(), _updatable.end(), updatable);
 	if (found == _updatable.end()) { return; }
 	_updatable.erase(found);

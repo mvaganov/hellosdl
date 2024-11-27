@@ -11,5 +11,5 @@ public:
 	virtual void SetName(std::string name) { _name = name; }
 	virtual VyEventProcessor* AsEventProcessor() { return nullptr; }
 	virtual VyDrawable* AsDrawable() { return nullptr; }
-	virtual SdlUpdatable* AsUpdatable() { return nullptr; }
+	virtual VyUpdatable* AsUpdatable() { return nullptr; }
 };
